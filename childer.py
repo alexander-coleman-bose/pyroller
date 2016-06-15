@@ -79,18 +79,18 @@ class character:
 #        if len(stats) != 6:
 #            raise RuntimeError("You must input 6 stats to assignStats")
         for stat in stats:
-#            if stat > 15:
-#                raise RuntimeError("You cannot assign a stat to higher than 15")
-#            elif stat > 13:
-#                cost = cost + 2*(stat-13) + 5
-#            else:
-#                cost = cost + stat - 8
-            if stat > 13:
+            if stat > 15:
+                raise RuntimeError("You cannot assign a stat to higher than 15")
+            elif stat > 13:
                 cost = cost + 2*(stat-13) + 5
-                if stat > 15:
-                    print 'var too high'
             else:
                 cost = cost + stat - 8
+#            if stat > 13:
+#                cost = cost + 2*(stat-13) + 5
+#                if stat > 15:
+#                    print 'var too high'
+#            else:
+#                cost = cost + stat - 8
             
         if (self.buyPointsBase - cost) < 0:
             raise RuntimeError("You don't have enough base buy points to make this stats change")
