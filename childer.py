@@ -61,14 +61,68 @@ class character:
         self.wis = self.bWis
         self.cha = self.bCha
         
-        self.abPoints = 27
+        self.buyPointsBase = 27
+        self.buyPointsRem = 27
         
-        self.strm = math.floor((self.str - 10)/2)
-        self.dexm = math.floor((self.dex - 10)/2)
-        self.conm = math.floor((self.con - 10)/2)
-        self.intm = math.floor((self.int - 10)/2)
-        self.wism = math.floor((self.wis - 10)/2)
-        self.cham = math.floor((self.cha - 10)/2)
+        self.strm = int(floor((self.str - 10)/2))
+        self.dexm = int(floor((self.dex - 10)/2))
+        self.conm = int(floor((self.con - 10)/2))
+        self.intm = int(floor((self.int - 10)/2))
+        self.wism = int(floor((self.wis - 10)/2))
+        self.cham = int(floor((self.cha - 10)/2))
+        
+    def assignStats(self,vstr,vdex,vcon,vint,vwis,vcha):
+        stats = [vstr,vdex,vcon,vint,vwis,vcha]
+        cost = 0
+        
+        # check to make sure that you input the right number of stats
+#        if len(stats) != 6:
+#            raise RuntimeError("You must input 6 stats to assignStats")
+        for stat in stats:
+#            if stat > 15:
+#                raise RuntimeError("You cannot assign a stat to higher than 15")
+#            elif stat > 13:
+#                cost = cost + 2*(stat-13) + 5
+#            else:
+#                cost = cost + stat - 8
+            if stat > 13:
+                cost = cost + 2*(stat-13) + 5
+                if stat > 15:
+                    print 'var too high'
+            else:
+                cost = cost + stat - 8
+            
+        if (self.buyPointsBase - cost) < 0:
+            raise RuntimeError("You don't have enough base buy points to make this stats change")
+        else: #assign the stats
+            self.str = stats[0]
+            self.dex = stats[1]
+            self.con = stats[2]
+            self.int = stats[3]
+            self.wis = stats[4]
+            self.cha = stats[5]
+            
+            # Calculate modifiers
+            self.strm = int(floor((self.str - 10)/2))
+            self.dexm = int(floor((self.dex - 10)/2))
+            self.conm = int(floor((self.con - 10)/2))
+            self.intm = int(floor((self.int - 10)/2))
+            self.wism = int(floor((self.wis - 10)/2))
+            self.cham = int(floor((self.cha - 10)/2))
+            
+            # Calculate remaining points
+            self.buyPointsRem = self.buyPointsBase - cost
+            
+        print 'Your stats:'
+        print 'Strength:     {:2d} ({:+2d})'.format(self.str,self.strm)
+        print 'Dexterity:    {:2d} ({:+2d})'.format(self.dex,self.dexm)
+        print 'Constitution: {:2d} ({:+2d})'.format(self.con,self.conm)
+        print 'Intelligence: {:2d} ({:+2d})'.format(self.int,self.intm)
+        print 'Wisdom:       {:2d} ({:+2d})'.format(self.wis,self.wism)
+        print 'Charisma:     {:2d} ({:+2d})'.format(self.cha,self.cham)
+        print 'Remaining buy points: {:3d}'.format(self.buyPointsRem)
+        
+        
         
 cTest = character()
 print cTest.xp
