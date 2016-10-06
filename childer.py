@@ -10,33 +10,24 @@ from math import *
 class character:
     def __init__(self):
         self.name = []
-        
+
         self.xp = 0
         self.level = []
-#        self.barbarian = 0
-#        self.bard = 0;
-#        self.cleric = 0;
-#        self.druid = 0;
-#        self.fighter = 0;
-#        self.monk = 0;
-#        self.paladin = 0;
-#        self.ranger = 0;
-#        self.rogue = 0;
-#        self.sorcerer = 0;
-#        self.warlock = 0;
-#        self.wizard = 0;
+
         self.race = []
+        self.subrace = []
         self.background = []
-        
+
         self.faction = []
         self.factionRank = 0
-        
+        self.factionRenown = 0
+
         self.alignment = [] # LG,NG,CG,LN,TN,CN,LE,NE,CE
         self.age = [] # in years
-        
+
         self.height = [] # in inches
         self.weight = [] # in lbs.
-        
+
         self.eyes = []
         self.skin = []
         self.hair = []
@@ -46,73 +37,66 @@ class character:
         self.bonds = []
         self.flaws = []
         self.backstory = []
-        
-        self.bStr = 8
-        self.bDex = 8
-        self.bCon = 8
-        self.bInt = 8
-        self.bWis = 8
-        self.bCha = 8
-        
-        self.str = self.bStr
-        self.dex = self.bDex
-        self.con = self.bCon
-        self.int = self.bInt
-        self.wis = self.bWis
-        self.cha = self.bCha
-        
+
+#        self.bStr = 8
+#        self.bDex = 8
+#        self.bCon = 8
+#        self.bInt = 8
+#        self.bWis = 8
+#        self.bCha = 8
+
+#        self.str = self.bStr
+#        self.dex = self.bDex
+#        self.con = self.bCon
+#        self.int = self.bInt
+#        self.wis = self.bWis
+#        self.cha = self.bCha
+
+        self.statBase = {'str':8,'dex':8,'con':8,'int':8,'wis':8,'cha':8}
+        self.statRolled = self.statBase
+        self.statRacialBonus = {'str':0,'dex':0,'con':0,'int':0,'wis':0,'cha':0}
+        self.stat = self.statBase
+        self.statMod = {'str':-1,'dex':-1,'con':-1,'int':-1,'wis':-1,'cha':-1}
+
         self.buyPointsBase = 27
         self.buyPointsRem = 27
+
+#        self.strm = int(floor((self.str - 10)/2))
+#        self.dexm = int(floor((self.dex - 10)/2))
+#        self.conm = int(floor((self.con - 10)/2))
+#        self.intm = int(floor((self.int - 10)/2))
+#        self.wism = int(floor((self.wis - 10)/2))
+#        self.cham = int(floor((self.cha - 10)/2))
+
+#        self.dic = {}
         
-        self.strm = int(floor((self.str - 10)/2))
-        self.dexm = int(floor((self.dex - 10)/2))
-        self.conm = int(floor((self.con - 10)/2))
-        self.intm = int(floor((self.int - 10)/2))
-        self.wism = int(floor((self.wis - 10)/2))
-        self.cham = int(floor((self.cha - 10)/2))
-        
-    def assignStats(self,vstr,vdex,vcon,vint,vwis,vcha):
-        stats = [vstr,vdex,vcon,vint,vwis,vcha]
-        cost = 0
-        
-        # check to make sure that you input the right number of stats
-#        if len(stats) != 6:
-#            raise RuntimeError("You must input 6 stats to assignStats")
-        for stat in stats:
-            if stat > 15:
-                raise RuntimeError("You cannot assign a stat to higher than 15")
-            elif stat > 13:
-                cost = cost + 2*(stat-13) + 5
+
+    def abilityScore(self,ability,newScore = None):
+        if newScore == None:
+            return self.stat[ability]
+        else:
+            adjScore = newScore - self.statRacialBonus[ability]
+            cost = 0
+            
+            # if rolled or point buy...
+            
+            if adjScore < 8:
+                raise RuntimeError("Stat cannot be lowered any further than 8 plus racial bonus.")
+            elif adjScore > 15:
+                raise RuntimeError("Stat cannot be raised any higher than 15 plus racial bonus.")
+            elif adjScore > 13:
+                cost = cost + 2*(adjScore-13) + 5
             else:
-                cost = cost + stat - 8
-#            if stat > 13:
-#                cost = cost + 2*(stat-13) + 5
-#                if stat > 15:
-#                    print 'var too high'
-#            else:
-#                cost = cost + stat - 8
-            
-        if (self.buyPointsBase - cost) < 0:
-            raise RuntimeError("You don't have enough base buy points to make this stats change")
-        else: #assign the stats
-            self.str = stats[0]
-            self.dex = stats[1]
-            self.con = stats[2]
-            self.int = stats[3]
-            self.wis = stats[4]
-            self.cha = stats[5]
-            
-            # Calculate modifiers
-            self.strm = int(floor((self.str - 10)/2))
-            self.dexm = int(floor((self.dex - 10)/2))
-            self.conm = int(floor((self.con - 10)/2))
-            self.intm = int(floor((self.int - 10)/2))
-            self.wism = int(floor((self.wis - 10)/2))
-            self.cham = int(floor((self.cha - 10)/2))
-            
-            # Calculate remaining points
-            self.buyPointsRem = self.buyPointsBase - cost
-            
+                cost = cost + adjScore - 8
+                
+            if (self.buyPointsRem - cost) < 0:
+                raise RuntimeError("You don't have enough ability score buy points to make this stats change")
+            else:
+                self.buyPointsRem = self.buyPointsRem - cost
+                
+            self.stat[ability] = newScore
+            self.statMod[ability] = int(floor( (self.stat[ability]-10)/2 ))
+                
         print 'Your stats:'
         print 'Strength:     {:2d} ({:+2d})'.format(self.str,self.strm)
         print 'Dexterity:    {:2d} ({:+2d})'.format(self.dex,self.dexm)
@@ -121,9 +105,8 @@ class character:
         print 'Wisdom:       {:2d} ({:+2d})'.format(self.wis,self.wism)
         print 'Charisma:     {:2d} ({:+2d})'.format(self.cha,self.cham)
         print 'Remaining buy points: {:3d}'.format(self.buyPointsRem)
-        
-        
-        
-cTest = character()
-print cTest.xp
-print("Ideals: ",cTest.ideals)
+
+
+#cTest = character()
+#print cTest.xp
+#print("Ideals: ",cTest.ideals)
