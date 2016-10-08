@@ -10,29 +10,29 @@ from random import randint
 
 class character:
     def __init__(self):
-        self.name = []
-        self.portrait = []
+        self.name = 'Faen Liadon'
+        self.portrait = [] # link to portrait image?
 
         self.xp = 0
-        self.level = []
+        self.level = 1
 
-        self.race = []
-        self.subrace = []
-        self.background = []
+        self.race = 'Elf'
+        self.subrace = 'High Elf'
+        self.background = 'Urchin'
 
-        self.faction = []
-        self.factionRank = 0
-        self.factionRenown = 0
+        self.faction = 'Harpers'
+        self.factionRank = 1
+        self.factionRenown = 4
 
-        self.alignment = [] # LG,NG,CG,LN,TN,CN,LE,NE,CE
-        self.age = [] # in years
+        self.alignment = 'CG' # LG,NG,CG,LN,TN,CN,LE,NE,CE
+        self.age = 84 # in years
 
-        self.height = [] # in inches
-        self.weight = [] # in lbs.
+        self.height = (5*12+4) # in inches
+        self.weight = 117 # in lbs.
 
-        self.eyes = []
-        self.skin = []
-        self.hair = []
+        self.eyes = 'Pale Blue'
+        self.skin = 'Ashen'
+        self.hair = 'Light Gray'
         self.appearance = []
         
         self.personality = []
