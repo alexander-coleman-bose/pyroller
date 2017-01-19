@@ -8,6 +8,7 @@ Created on Tue Jan 17 10:28:14 2017
 from math import floor
 from random import randint
 import re
+import numpy as np
 
 #def roll(varargin)
 def roll(numD = 1,typeD = 20,modD = 0,keepLow = 0,keepHigh = 0,rerollD = 0):
@@ -231,6 +232,17 @@ def rollInfo(varargin = "1d20"):
 #                print(sum(result))
 #                print(modD[indS])
                 results[indS][((-1)**negD[indS])*sum(result)+modD[indS]] = results[indS][((-1)**negD[indS])*sum(result)+modD[indS]] + 1/(typeD[indS]**numD[indS])
+          
+#    np.asarray = ...
+#    matrix = np.array(
+#             [[-2,  5,  3,  2],
+#              [ 9, -6,  5,  1],
+#              [ 3,  2,  7,  3],
+#              [-1,  8, -4,  8]])
+#    
+#    diags = [matrix[::-1,:].diagonal(i) for i in range(-3,4)]
+#    diags.extend(matrix.diagonal(i) for i in range(3,-4,-1))
+#    print [n.tolist() for n in diags]
                 
     dic['results'] = results
             
