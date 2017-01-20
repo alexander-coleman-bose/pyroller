@@ -44,7 +44,7 @@ def roll(numD = 1,typeD = 20,modD = 0,keepLow = 0,keepHigh = 0,rerollD = 0):
     return sum(rolls) + modD
     
 #def rollInfo(numD = 1,typeD = 20,modD = 0,keepLow = 0,keepHigh = 0,rerollD = 0):
-def rollInfo(varargin = "1d20"):
+def rollInfo(varargin_clean = "1d20"):
     
     def ss(numD):
         tmp = 0;
@@ -59,7 +59,8 @@ def rollInfo(varargin = "1d20"):
         return tmp
     
     # delete spaces and replace '-' with a '+-' so that the split works
-    varargin = varargin.replace(" ","")
+    varargin_clean = varargin_clean.replace(" ","")
+    varargin = varargin_clean.replace("+-","-")
     varargin = varargin.replace("-","+-")
     # split the string into discrete rolls
     splits = varargin.split('+')
@@ -73,15 +74,20 @@ def rollInfo(varargin = "1d20"):
     negD = list()
     
     dic = {}
+    dic['roll'] = varargin_clean
     dic['min'] = 0
     dic['max'] = 0
     dic['val'] = 0
     dic['results'] = 0
+    dic['keys'] = 0
+    dic['results_all'] = 0
     dic['avg'] = 0
     dic['critHit'] = 0
     dic['critMiss'] = 0
     
     results = list()
+    keys = list()
+    results_all = list()
     
     for indS in range(len(splits)):
         # parse for numD
@@ -125,8 +131,6 @@ def rollInfo(varargin = "1d20"):
             else:
                 rerollD.append(0)
 
-#        if numD[indS]<0:
-#            raise RuntimeError("You must roll a number of dice >= 0.")
         if keepLow[indS] and keepHigh[indS]:
             raise RuntimeError("You can keep the lowest or the highest rolls, not both.")
         elif keepLow[indS]<0 or (keepLow[indS]>=numD[indS] and keepLow[indS]):
@@ -155,11 +159,11 @@ def rollInfo(varargin = "1d20"):
 #        print(rerollD)
 #        print(negD)
         
-        tmpMin = ((-1)**negD[indS])*(numD[indS]-keepLow[indS]-keepHigh[indS])*(typeD[indS]**negD[indS]) + modD[indS]
-        tmpMax = ((-1)**negD[indS])*(numD[indS]-keepLow[indS]-keepHigh[indS])*(typeD[indS]**(1-negD[indS])) + modD[indS]
-        dic['min'] = dic['min'] + tmpMin
-        dic['max'] = dic['max'] + tmpMax
+    # establish the minimum and maximum values for this roll
+        thisMin = ((-1)**negD[indS])*(numD[indS]-keepLow[indS]-keepHigh[indS])*(typeD[indS]**negD[indS]) + modD[indS]
+        thisMax = ((-1)**negD[indS])*(numD[indS]-keepLow[indS]-keepHigh[indS])*(typeD[indS]**(1-negD[indS])) + modD[indS]
         
+    # generate an actual rolled value for the die roll
         rolls = list()
         tmp = 0
         
@@ -179,38 +183,35 @@ def rollInfo(varargin = "1d20"):
                 
         dic['val'] = dic['val'] + sum(rolls) + modD[indS]
         
-        results.append({})
+    # compute the probabilities
+        results_all.append({})
+        thisResult = [0] * (thisMax-thisMin+1)
+        # if an advantage or disadvantage roll
         if numD[indS] == 2 and typeD[indS] == 20 and (keepHigh[indS] == 1 or keepLow[indS] == 1):
             if keepHigh[indS] == 1:
                 for indD in range(typeD[indS]):
                     n = indD+1 # ind is 0 through typeD
-#                    results[indS][n+modD[indS]] = (2*n-1)/typeD[indS]**numD[indS]
-                    results[indS][n] = (2*n-1)/typeD[indS]**numD[indS]
-                    
-#                dic['avg'] = dic['avg'] + (2*ss(typeD[indS])-(1+typeD[indS])*(typeD[indS]/2))/typeD[indS]**numD[indS] + modD[indS]
+                    tmp = (2*n-1)/typeD[indS]**numD[indS]
+                    results_all[indS][n] = tmp
+                    thisResult[indD] = tmp
                 dic['avg'] = dic['avg'] + (2*ss(typeD[indS])-(1+typeD[indS])*(typeD[indS]/2))/typeD[indS]**numD[indS]
-#                dic['results'] = results
-#                dic['critHit'] = results[indS][20+modD[indS]]
-#                dic['critMiss'] = results[indS][1+modD[indS]]
-                if dic['critHit'] == 0:
-                    dic['critHit'] = results[indS][20]
-                    dic['critMiss'] = results[indS][1]
+
             elif keepLow[indS] == 1:
                 for indD in range(typeD[indS]):
                     n = indD+1 # ind is 0 through typeD
-#                    results[indS][n+modD[indS]] = (2*(21-n)-1)/typeD[indS]**numD[indS]
-                    results[indS][n] = (2*(21-n)-1)/typeD[indS]**numD[indS]
-                    
-#                dic['avg'] = dic['avg'] + (2*ds(typeD[indS])-(1+typeD[indS])*(typeD[indS]/2))/typeD[indS]**numD[indS] + modD[indS]
+                    tmp = (2*(21-n)-1)/typeD[indS]**numD[indS]
+                    results_all[indS][n] = tmp
+                    thisResult[indD] = tmp
                 dic['avg'] = dic['avg'] + (2*ds(typeD[indS])-(1+typeD[indS])*(typeD[indS]/2))/typeD[indS]**numD[indS]
-#                dic['results'] = results
-#                dic['critHit'] = results[indS][20+modD[indS]]
-#                dic['critMiss'] = results[indS][1+modD[indS]]
-                if dic['critHit'] == 0:          
-                    dic['critHit'] = results[indS][20]
-                    dic['critMiss'] = results[indS][1]
+                
             else:
                 raise RuntimeError("Unexpected error: keepHigh or keepLow should = 1.")
+                
+            if dic['critHit'] == 0:          
+#                    dic['critHit'] = results_all[indS][20]
+#                    dic['critMiss'] = results_all[indS][1]
+                dic['critHit'] = thisResult[thisMax-1]
+                dic['critMiss'] = thisResult[thisMin-1]
         elif ~keepLow[indS] and ~keepHigh[indS]:
             dic['avg'] = dic['avg'] + numD[indS]*(1+typeD[indS])/2 + modD[indS]
             
@@ -218,8 +219,8 @@ def rollInfo(varargin = "1d20"):
                 dic['critHit'] = 1/20
                 dic['critMiss'] = 1/20
             
-            for indR in range(tmpMin,tmpMax+1):
-                results[indS][indR] = 0
+            for indR in range(thisMin,thisMax+1):
+                results_all[indS][indR] = 0
             
             for indR in range(typeD[indS]**numD[indS]):
                 n = indR+1
@@ -227,34 +228,50 @@ def rollInfo(varargin = "1d20"):
                 for indN in range(numD[indS]):
                     result.append(floor((indR/(typeD[indS]**indN))%typeD[indS]+1))
                     
-                # may incur floating point errors
-#                print(results)
+#                print(results_all)
 #                print(sum(result))
 #                print(modD[indS])
-                results[indS][((-1)**negD[indS])*sum(result)+modD[indS]] = results[indS][((-1)**negD[indS])*sum(result)+modD[indS]] + 1/(typeD[indS]**numD[indS])
-          
-#    np.asarray = ...
-#    matrix = np.array(
-#             [[-2,  5,  3,  2],
-#              [ 9, -6,  5,  1],
-#              [ 3,  2,  7,  3],
-#              [-1,  8, -4,  8]])
-#    
-#    diags = [matrix[::-1,:].diagonal(i) for i in range(-3,4)]
-#    diags.extend(matrix.diagonal(i) for i in range(3,-4,-1))
-#    print [n.tolist() for n in diags]
-                
-    dic['results'] = results
+                # may incur floating point errors
+                thisResult[sum(result)-1] = thisResult[sum(result)-1] + 1
+                results_all[indS][((-1)**negD[indS])*sum(result)+modD[indS]] = results_all[indS][((-1)**negD[indS])*sum(result)+modD[indS]] + 1/(typeD[indS]**numD[indS])
+        
+            thisResult = [x/(typeD[indS]**numD[indS]) for x in thisResult]
+        
+        # if results is empty, this is the first split
+        if not results:
+            if negD[indS]:
+                results = np.array(list(reversed(thisResults)),dtype=float)
+            else:
+                results = np.array(thisResults,dtype=float)
+        else:
+            if negD[indS]:
+                resultsArray = results[np.newaxis].T @ np.array(list(reversed(thisResults)),dtype=float)[np.newaxis]
+            else:
+                resultsArray = results[np.newaxis].T @ np.array(thisResults,dtype=float)[np.newaxis]
+            
+        #    diags = [matrix[::-1,:].diagonal(i) for i in range(-3,4)]
+        #    diags.extend(matrix.diagonal(i) for i in range(3,-4,-1))
+        #    print [n.tolist() for n in diags]
+            
+        dic['min'] = dic['min'] + thisMin
+        dic['max'] = dic['max'] + thisMax
+        
+#        tmpArray = np.array(list(results[indS].values()),dtype=float)
+
+    
+    dic['keys'] = list(range(dic['min'],dic['max']+1))
+    dic['results'] = results.tolist()
+    dic['results_all'] = results_all
             
     return dic
 
 def rollWin(dic,target = 15):
     # gives the probability that a given roll will meet or exceed the target
-    return sum(dic['results'][0][k] for k in range(target,max(dic['results'][0])+1))
+    return sum(dic['results_all'][0][k] for k in range(target,max(dic['results_all'][0])+1))
     
 def rollLose(dic,target = 15):
     # gives the probability that a given roll will fail to meet the target
-    return sum(dic['results'][0][k] for k in range(min(dic['results'][0]),target))
+    return sum(dic['results_all'][0][k] for k in range(min(dic['results_all'][0]),target))
     
 def critInfo(dic):
     # gives the probability that a given roll will critically hit or miss
