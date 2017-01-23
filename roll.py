@@ -1,5 +1,24 @@
 # -*- coding: utf-8 -*-
-"""
+"""Helper functions to calculate the probabilities of given die rolls and to simulate die rolls.
+
+Functions:
+    roll(numD = 1,typeD = 20,modD = 0,keepLow = 0,keepHigh = 0,rerollD = 0)
+        simulates the specified die roll
+    rollInfo(varargin_clean = "1d20")
+        calculates the probabilities of specific results of a given die roll
+    rollWin(dic,target = 15)
+        returns the summed probability of meeting or exceeding the target value
+    rollLose(dic,target = 15)
+        returns the summed probability of not meeting the target value
+    critInfo(dic)
+        returns the probabilities of critical hits and misses for rolls that can crit
+        
+TODO:
+    * get roll working with string input
+    * get keepLow and keepHigh working for any roll fed into rollInfo
+    * get rerollD to support multiple values in roll and rollInfo
+    * get rerollD probabilities for rollInfo
+        
 Created on Tue Jan 17 10:28:14 2017
 
 @author: lordmailman
@@ -12,6 +31,20 @@ import numpy as np
 
 #def roll(varargin)
 def roll(numD = 1,typeD = 20,modD = 0,keepLow = 0,keepHigh = 0,rerollD = 0):
+    """Simulates the specified die roll
+    
+    Args:
+        numD(int): The number of dice to be rolled. Default is 1.
+        typeD(int): The number of die sides. Default is 20.
+        modD(int): The modifier bonus to add to the roll. Default is 0.
+        keepLow(int): How many of the lowest rolling dice to keep. Default is 0.
+        keepHigh(int): How many of the highest rolling dice to kepp. Default is 0.
+        rerollD(int): Will reroll any die that returns this number. Default is 0.
+        
+    Returns:
+        The summed total value of the simulated roll.
+    
+    """
     if numD<0:
         raise RuntimeError("You must roll a positive number of dice.")
     elif keepLow>0 and keepHigh>0:
@@ -45,6 +78,37 @@ def roll(numD = 1,typeD = 20,modD = 0,keepLow = 0,keepHigh = 0,rerollD = 0):
     
 #def rollInfo(numD = 1,typeD = 20,modD = 0,keepLow = 0,keepHigh = 0,rerollD = 0):
 def rollInfo(varargin_clean = "1d20"):
+    """Calculates the probabilities of and simulates the given die roll
+    
+    Args:
+        varargin_clean(str): A string that describes the die roll. Default:1d20
+        
+    Returns:
+        dic(dict): A dictionary with the following fields:
+            'roll':(str) The roll string, stripped of white-space
+            'min':(float) The minimum roll result
+            'max':(float) The maximum roll result
+            'val':(float) The value of one simulated roll using the given dice
+            'results':(list) A list of the probabilities of each result, from
+                dic['min'] to dic['max']. 'k' and 'K' (keepLow and keepHigh)
+                only work for 2d20 rolls
+            'keys':(list) A list of the values of each result, keyed to 'results'
+            'avg':(float) The average value of the roll. 'k' and 'K' (keepLow
+                and keepHigh) only work for 2d20 rolls
+            'critHit':(float) The probability that the given roll will
+                critically hit
+            'critMiss':(float) The probability that the given roll will
+                critically miss
+    
+    Examples:
+        dic = rollInfo('2d4') # rolls two four-sided dice
+        dic = rollInfo('1d20+5') # rolls a twenty-sided die and adds 5
+        dic = rollInfo('2d20k1') # rolls two twenty-sided dice and keeps the lowest
+        dic = rollInfo('2d20K1') # rolls two twenty-sided dice and keeps the highest
+        dic = rollInfo('2d6r1') # rolls 2d6 and rerolls (once) any '1's
+        dic = rollInfo('2d20K1+1d8+1) # rolls 2d20 at advantage and adds 1d8 + 5
+        
+    """
     
     def ss(numD):
         tmp = 0;
@@ -267,6 +331,17 @@ def rollInfo(varargin_clean = "1d20"):
     return dic
 
 def rollWin(dic,target = 15):
+    """Returns the probability that the given roll will meet or exceed the target value
+    
+    Args:
+        dic (dict): A dictionary result from a rollInfo roll
+        target (int): The target value
+        
+    Returns:
+        float: The probability that the given roll will meet or exceed the
+            target value
+            
+    """
     # gives the probability that a given roll will meet or exceed the target
 #    return sum(dic['results_all'][0][k] for k in range(target,max(dic['results_all'][0])+1))
     dicLen = len(dic['results'])
@@ -284,6 +359,17 @@ def rollWin(dic,target = 15):
         return sum(dic['results'][k] for k in range(target-dic['min'],dicLen))
         
 def rollLose(dic,target = 15):
+    """Returns the probability that the given roll will fail to meet the target value
+    
+    Args:
+        dic (dict): A dictionary result from a rollInfo roll
+        target (int): The target value
+        
+    Returns:
+        float: The probability that the given roll will fail to meet the target
+            value
+            
+    """
     # gives the probability that a given roll will fail to meet the target
 #    return sum(dic['results_all'][0][k] for k in range(min(dic['results_all'][0]),target))
     if min(dic['keys'])>=target:
@@ -300,6 +386,16 @@ def rollLose(dic,target = 15):
         return sum(dic['results'][k] for k in range(target-dic['min']))
     
 def critInfo(dic):
+    """Returns the probability that the given roll will critically miss or hit
+        if applicable
+    
+    Args:
+        dic (dict): A dictionary result from a rollInfo roll
+        
+    Returns:
+        tuple: (dic['critHit'],dic['critMiss']
+            
+    """
     # gives the probability that a given roll will critically hit or miss
     return (dic['critHit'],dic['critMiss'])
 
