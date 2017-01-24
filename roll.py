@@ -15,7 +15,6 @@ Functions:
         
 TODO:
     * https://wiki.roll20.net/Dice_Reference
-    * get roll working with string input
     * get keepLow and keepHigh working for any roll fed into rollInfo
     * get rerollD to support multiple values in roll and rollInfo
     * get rerollD probabilities for rollInfo
@@ -31,51 +30,163 @@ import re
 import numpy as np
 
 #def roll(varargin)
-def roll(numD = 1,typeD = 20,modD = 0,keepLow = 0,keepHigh = 0,rerollD = 0):
+#def roll(numD = 1,typeD = 20,modD = 0,keepLow = 0,keepHigh = 0,rerollD = 0):
+def roll(varargin_clean, infoFlag = False):
     """Simulates the specified die roll
     
     Args:
-        numD(int): The number of dice to be rolled. Default is 1.
-        typeD(int): The number of die sides. Default is 20.
-        modD(int): The modifier bonus to add to the roll. Default is 0.
-        keepLow(int): How many of the lowest rolling dice to keep. Default is 0.
-        keepHigh(int): How many of the highest rolling dice to kepp. Default is 0.
-        rerollD(int): Will reroll any die that returns this number. Default is 0.
+        varargin_clean(str): A string that describes the die roll. Default:1d20
+            In the form of '(numDice)d(numSides)(tag)# + (numDice)d(numSides)(tag)# + ...
+            Tags:
+                'd' or 'dl': drop # of the lowest dice
+                'D' or 'dh': drop # of the highest dice
+                'k' or 'kh': keep # of the highest dice
+                'kl': keep # of the lowest dice
+                'r': reroll any die that hits this value
+            Refer to:
+                https://wiki.roll20.net/Dice_Reference
+                (Not all functionality is working)
+        infoFlag(bool): If True, run rollInfo on the input instead
         
     Returns:
-        The summed total value of the simulated roll.
+        float: The summed value of the simulated roll. IFF infoFlag is False.
+        dict: The dictionary returned from rollInfo. IFF infoFlag is True.
     
+    Examples:
+        val = roll('2d4') # rolls two four-sided dice
+        val = roll('1d20+5') # rolls a twenty-sided die and adds 5
+        val = roll('2d20k1') # rolls two twenty-sided dice and keeps the highest
+        val = roll('2d20kl1') # rolls two twenty-sided dice and keeps the lowest
+        val = roll('2d6r1') # rolls 2d6 and rerolls (once) any '1's
+        val = roll('2d20K1+1d8+1) # rolls 2d20 at advantage and adds 1d8 + 5
+        
     """
-    if numD<0:
-        raise RuntimeError("You must roll a positive number of dice.")
-    elif keepLow>0 and keepHigh>0:
-        raise RuntimeError("You can keep the lowest or the highest rolls, not both.")
-    elif keepLow<0 or keepLow>=numD:
-        raise RuntimeError("You must keep a positive number of dice, but no more than you roll.")
-    elif keepHigh<0 or keepHigh>=numD:
-        raise RuntimeError("You must keep a positive number of dice, but no more than you roll.")
-    elif rerollD<0 or rerollD>typeD:
-        raise RuntimeError("You cannot reroll numbers higher than the die has.")
-        
-    rolls = list()
     
-    for ind in range(numD):
-        tmp = randint(1,typeD)
-        if tmp == rerollD:
-            tmp = randint(1,typeD)
-        tmp = tmp
+    if infoFlag:
+        return rollInfo(varargin_clean)
+    else:
+    # delete spaces and replace '-' with a '+-' so that the split works
+        varargin_clean = varargin_clean.replace(" ","")
+        varargin = varargin_clean.replace("+-","-")
+        varargin = varargin.replace("-","+-")
+    # split the string into discrete rolls
+        splits = varargin.split('+')
+        nSplits = len(splits)
         
-        rolls.append(tmp)
+        numD = [0] * nSplits
+        typeD = [0] * nSplits
+        modD = [0] * nSplits
+        dropLow = [0] * nSplits
+        dropHigh = [0] * nSplits
+        keepLow = [0] * nSplits
+        keepHigh = [0] * nSplits
+        rerollD = [0] * nSplits
+        negD = [0] * nSplits
+        
+        # use this variable to sum up the result
+        val = 0
+        
+        for indS in range(len(splits)):
+            # parse for numD or modD
+            tmp = re.search(r'^(-|)(\d*)d',splits[indS])
+            if tmp:
+                numD[indS] = int(tmp.group().strip('d'))
+            else:
+                # if there isn't a 'd', then assume that the only value is modD
+                modD[indS] = int(splits[indS])
+                
+            # parse for typeD and dropLow
+            tmp = re.findall(r'(d)(\d*)',splits[indS])
+            if len(tmp) > 2:
+                raise RuntimeError("You can't use two separate drop low calls in a die slice.")
+            elif len(tmp) > 1:
+                typeD[indS] = int(tmp[0][1])
+                dropLow[indS] = int(tmp[1][1])
+            elif len(tmp) > 0:
+                typeD[indS] = int(tmp[0][1])
+                
+            tmp = re.findall(r'(d|D|dl|dh|k|kl|kh|r)(\d*)',splits[indS])
+            for indT in range(len(tmp)):
+                if tmp[indT][0] in ['dl']:
+                    dropLow[indS] = int(tmp[indT][1])
+                    
+                if tmp[indT][0] in ['D','dh']:
+                    dropHigh[indS] = int(tmp[indT][1])
+                    
+                if tmp[indT][0] in ['k','kh']:
+                    keepHigh[indS] = int(tmp[indT][1])
+                    
+                if tmp[indT][0] in ['kl']:
+                    dropHigh[indS] = int(tmp[indT][1])
+                    
+                if tmp[indT][0] in ['r']:
+                    rerollD[indS] = int(tmp[indT][1])
+                    
+            #debug
+    #        print(indS)
+    #        print(keepLow,keepHigh,dropLow,dropHigh)
+    #        print(numD)
+    #        print(splits[indS])
     
-    if keepLow>0:
-        for ind in range(numD-keepLow):
-            rolls.pop(rolls.index(max(rolls)))
+            if keepLow[indS] and keepHigh[indS]:
+                raise RuntimeError("You can keep the lowest or the highest rolls, not both.")
+            elif (keepLow[indS] or keepHigh[indS]) and (dropLow[indS] or dropHigh[indS]):
+                raise RuntimeError("You can't both drop and keep dice.")
+            elif keepLow[indS]<0 or (keepLow[indS]>=numD[indS] and keepLow[indS]):
+                raise RuntimeError("You must keep a positive number of dice, but less than you roll.")
+            elif keepHigh[indS]<0 or (keepHigh[indS]>=numD[indS] and keepHigh[indS]):
+                raise RuntimeError("You must keep a positive number of dice, but less than you roll.")
+            elif dropLow[indS]<0 or (dropLow[indS]>=numD[indS] and dropLow[indS]):
+                raise RuntimeError("You must keep a positive number of dice, but less than you roll.")
+            elif dropHigh[indS]<0 or (dropHigh[indS]>=numD[indS] and dropHigh[indS]):
+                raise RuntimeError("You must keep a positive number of dice, but less than you roll.")
+            elif rerollD[indS]<0 or rerollD[indS]>typeD[indS]:
+                raise RuntimeError("You cannot reroll numbers higher than the die has.")
+        
+#            if rerollD[indS]>0:
+#                print('Warning: rerolls are not supported by rollInfo')
+                
+            if numD[indS]<0:
+                negD[indS] = 1
+                numD[indS] = -1*numD[indS]
+            else:
+                negD[indS] = 0
             
-    if keepHigh>0:
-        for ind in range(numD-keepHigh):
-            rolls.pop(rolls.index(min(rolls)))
+            #debug
+    #        print(indS,splits)
+    #        print(numD,typeD,modD,negD,rerollD)
+    #        print(keepLow,keepHigh,dropLow,dropHigh)
+        
+        # generate an actual rolled value for the die roll
+            rolls = list()
+            tmp = 0
             
-    return sum(rolls) + modD
+            for indN in range(numD[indS]):
+                tmp = randint(1,typeD[indS])
+                if tmp == rerollD[indS]:
+                    tmp = randint(1,typeD[indS])
+                rolls.append(tmp)
+                
+            if dropLow[indS]>0:
+                for indK in range(dropLow[indS]):
+                    rolls.pop(rolls.index(min(rolls)))
+                    
+            if dropHigh[indS]>0:
+                for indK in range(dropHigh[indS]):
+                    rolls.pop(rolls.index(max(rolls)))
+            
+            if keepLow[indS]>0:
+                for indK in range(numD[indS]-keepLow[indS]):
+                    rolls.pop(rolls.index(max(rolls)))
+                    
+            if keepHigh[indS]>0:
+                for indK in range(numD[indS]-keepHigh[indS]):
+                    rolls.pop(rolls.index(min(rolls)))
+                    
+            val = val + sum(rolls) + modD[indS]
+        # end for every die slice
+        
+        return val
     
 #def rollInfo(numD = 1,typeD = 20,modD = 0,keepLow = 0,keepHigh = 0,rerollD = 0):
 def rollInfo(varargin_clean = "1d20"):
