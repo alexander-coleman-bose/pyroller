@@ -22,6 +22,7 @@ TODO:
     * get keepLow and keepHigh working for any roll fed into info
     * get rerollD to support multiple values in roll and info
     * get rerollD probabilities for info
+    * get median values, not just mean
         
 Created on Tue Jan 17 10:28:14 2017
 
@@ -219,7 +220,7 @@ def info(varargin_clean = "1d20"):
                 dic['min'] to dic['max']. 'd','dl','D','dh','k','kl','kh'
                     (keepLow/High and dropLow/High) only work for 2d20 rolls
             'keys':(list) A list of the values of each result, keyed to 'results'
-            'avg':(float) The average value of the roll. 'd','dl','D','dh','k',
+            'mean':(float) The average value of the roll. 'd','dl','D','dh','k',
                 'kl','kh' (keepLow/High and dropLow/High) only work for 2d20 rolls
             'critHit':(float) The probability that the given roll will
                 critically hit
@@ -274,7 +275,7 @@ def info(varargin_clean = "1d20"):
     dic['results'] = 0
     dic['keys'] = 0
 #    dic['results_all'] = 0
-    dic['avg'] = 0
+    dic['mean'] = 0
     dic['critHit'] = 0
     dic['critMiss'] = 0
     
@@ -404,7 +405,7 @@ def info(varargin_clean = "1d20"):
                     tmp = (2*n-1)/typeD[indS]**numD[indS]
 #                    results_all[indS][n] = tmp
                     thisResult[indD] = tmp
-                dic['avg'] = dic['avg'] + (2*ss(typeD[indS])-(1+typeD[indS])*(typeD[indS]/2))/typeD[indS]**numD[indS]
+                dic['mean'] = dic['mean'] + (2*ss(typeD[indS])-(1+typeD[indS])*(typeD[indS]/2))/typeD[indS]**numD[indS]
 
             elif keepLow[indS] or dropHigh[indS]:
                 for indD in range(typeD[indS]):
@@ -412,7 +413,7 @@ def info(varargin_clean = "1d20"):
                     tmp = (2*(21-n)-1)/typeD[indS]**numD[indS]
 #                    results_all[indS][n] = tmp
                     thisResult[indD] = tmp
-                dic['avg'] = dic['avg'] + (2*ds(typeD[indS])-(1+typeD[indS])*(typeD[indS]/2))/typeD[indS]**numD[indS]
+                dic['mean'] = dic['mean'] + (2*ds(typeD[indS])-(1+typeD[indS])*(typeD[indS]/2))/typeD[indS]**numD[indS]
                 
             else:
                 raise RuntimeError("Unexpected error: keepHigh or keepLow should = 1.")
@@ -423,7 +424,7 @@ def info(varargin_clean = "1d20"):
                 dic['critHit'] = thisResult[thisMax-1]
                 dic['critMiss'] = thisResult[thisMin-1]
         elif ~keepLow[indS] and ~keepHigh[indS] and ~dropLow[indS] and ~dropHigh[indS]:
-            dic['avg'] = dic['avg'] + numD[indS]*(1+typeD[indS])/2 + modD[indS]
+            dic['mean'] = dic['mean'] + numD[indS]*(1+typeD[indS])/2 + modD[indS]
             
             if typeD[indS] == 20 and dic['critHit'] == 0:
                 dic['critHit'] = 1/20
@@ -488,6 +489,7 @@ def info(varargin_clean = "1d20"):
         dic['max'] = dic['max'] + thisMax
         # end for every indS loop
     
+    dic['avg'] = dic['mean']
     dic['keys'] = list(range(dic['min'],dic['max']+1))
     dic['results'] = results.tolist()
 #    dic['results_all'] = results_all
