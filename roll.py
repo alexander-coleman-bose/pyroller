@@ -453,7 +453,7 @@ def rollInfo(varargin_clean = "1d20"):
 #        
 #            thisResult = [x/(typeD[indS]**numD[indS]) for x in thisResult]
             if modD[indS]:
-                thisResult = [modD[indS]]
+                thisResult = [1]
 #            elif negD[indS]:
 #                thisResult = reversed(result.tolist())
             else:
@@ -556,10 +556,7 @@ def critInfo(dic):
             
     """
     # gives the probability that a given roll will critically hit or miss
-    return (dic['critHit'],dic['critMiss'])
-
-                
-dic = rollInfo('2d20k1+1d6+5')            
+    return (dic['critHit'],dic['critMiss'])       
 
 #advantage
 #1   1/20*1/20=0.0025
