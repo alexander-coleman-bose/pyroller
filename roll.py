@@ -696,3 +696,22 @@ def critInfo(dic):
 #34  1*1*3 + 1*3*1 + 3*1*1 + 1*1*2 + 1*2*1 + 2*1*1 = 15
 #44  1*1*4 + 1*1*3 + 1*1*3 = 10
 #probability for nm result, of which there are 10 for 3d4k2 = 4+3+2+1 nCr?
+
+## reroll probabilities
+#1d6r1 =>
+#1 (1/6) =>  1 (1/6)
+#            2 (1/6)
+#            3 (1/6)
+#            4 (1/6)
+#            5 (1/6)
+#            6 (1/6)
+#2 (1/6 + 1/36)
+#3 ...
+#4 ...
+#5 ...
+#6 ...
+## for one die
+#if result == rerollD[indS]:
+#    prob = typeD[indS]**numD[indS]
+#else:
+#    prob = (typeD[indS] + 1)/(typeD[indS]**numD[indS])
