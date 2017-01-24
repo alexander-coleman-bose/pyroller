@@ -426,23 +426,39 @@ def rollInfo(varargin_clean = "1d20"):
             
 #            for indR in range(thisMin,thisMax+1):
 #                results_all[indS][indR] = 0
+            result = np.array([0])
+            for indN in range(numD[indS]):
+                if indN == 0:
+                    result = np.array([1/typeD[indS]]*typeD[indS],dtype=float)
+                else:
+                    resultArray = result[np.newaxis].T @ np.array([1/typeD[indS]]*typeD[indS],dtype=float)[np.newaxis]
+                    tmp = [resultArray[::-1,:].diagonal(i) for i in range(-resultArray.shape[0]+1,resultArray.shape[1])]
+                    diags = [sum(resultArray.tolist()) for resultArray in tmp]
+                    result = np.array(diags)
             
-            for indR in range(typeD[indS]**numD[indS]):
-                n = indR+1
-                result = []
-                for indN in range(numD[indS]):
-                    result.append(floor((indR/(typeD[indS]**indN))%typeD[indS]+1))
-                   
-                # debug
-#                print(results_all)
-#                print(sum(result),thisMin,thisMax)
-#                print(thisResult)
-#                print(modD[indS])
-                # may incur floating point errors
-                thisResult[sum(result)-thisMin+modD[indS]] = thisResult[sum(result)-thisMin+modD[indS]] + 1
-#                results_all[indS][((-1)**negD[indS])*sum(result)+modD[indS]] = results_all[indS][((-1)**negD[indS])*sum(result)+modD[indS]] + 1/(typeD[indS]**numD[indS])
-        
-            thisResult = [x/(typeD[indS]**numD[indS]) for x in thisResult]
+#            for indR in range(typeD[indS]**numD[indS]):
+#                n = indR+1
+#                result = []
+#                for indN in range(numD[indS]):
+#                    result.append(floor((indR/(typeD[indS]**indN))%typeD[indS]+1))
+#                   
+#                # debug
+##                print(results_all)
+##                print(sum(result),thisMin,thisMax)
+##                print(thisResult)
+##                print(modD[indS])
+#                # may incur floating point errors
+#                thisResult[sum(result)-thisMin+modD[indS]] = thisResult[sum(result)-thisMin+modD[indS]] + 1
+##                results_all[indS][((-1)**negD[indS])*sum(result)+modD[indS]] = results_all[indS][((-1)**negD[indS])*sum(result)+modD[indS]] + 1/(typeD[indS]**numD[indS])
+#        
+#            thisResult = [x/(typeD[indS]**numD[indS]) for x in thisResult]
+            if modD[indS]:
+                thisResult = [modD[indS]]
+#            elif negD[indS]:
+#                thisResult = reversed(result.tolist())
+            else:
+                thisResult = result.tolist()
+            
         else:
             print('Warning: dropLow/High and keepLow/High are not fully supported by rollInfo.')
         
@@ -543,7 +559,7 @@ def critInfo(dic):
     return (dic['critHit'],dic['critMiss'])
 
                 
-                
+dic = rollInfo('2d20k1+1d6+5')            
 
 #advantage
 #1   1/20*1/20=0.0025
