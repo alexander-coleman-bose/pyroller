@@ -4,13 +4,13 @@
 Functions:
     roll(numD = 1,typeD = 20,modD = 0,keepLow = 0,keepHigh = 0,rerollD = 0)
         simulates the specified die roll
-    rollInfo(varargin_clean = "1d20")
+    info(varargin_clean = "1d20")
         calculates the probabilities of specific results of a given die roll
-    rollWin(dic,target = 15)
+    win(dic,target = 15)
         returns the summed probability of meeting or exceeding the target value
-    rollLose(dic,target = 15)
+    lose(dic,target = 15)
         returns the summed probability of not meeting the target value
-    critInfo(dic)
+    crit(dic)
         returns the probabilities of critical hits and misses for rolls that can crit
         
 TODO:
@@ -19,9 +19,9 @@ TODO:
     * configuration system for reroll, crit, and exploding behavior
     * function to compare one roll to another
     * BUG: negD on '-2d20k1' doesn't work
-    * get keepLow and keepHigh working for any roll fed into rollInfo
-    * get rerollD to support multiple values in roll and rollInfo
-    * get rerollD probabilities for rollInfo
+    * get keepLow and keepHigh working for any roll fed into info
+    * get rerollD to support multiple values in roll and info
+    * get rerollD probabilities for info
         
 Created on Tue Jan 17 10:28:14 2017
 
@@ -50,11 +50,11 @@ def roll(varargin_clean, infoFlag = False):
             Refer to:
                 https://wiki.roll20.net/Dice_Reference
                 (Not all functionality is working)
-        infoFlag(bool): If True, run rollInfo on the input instead
+        infoFlag(bool): If True, run info on the input instead
         
     Returns:
         float: The summed value of the simulated roll. IFF infoFlag is False.
-        dict: The dictionary returned from rollInfo. IFF infoFlag is True.
+        dict: The dictionary returned from info. IFF infoFlag is True.
     
     Examples:
         val = roll('2d4') # rolls two four-sided dice
@@ -67,7 +67,7 @@ def roll(varargin_clean, infoFlag = False):
     """
     
     if infoFlag:
-        return rollInfo(varargin_clean)
+        return info(varargin_clean)
     else:
     # delete spaces and replace '-' with a '+-' so that the split works
         varargin_clean = varargin_clean.replace(" ","")
@@ -148,7 +148,7 @@ def roll(varargin_clean, infoFlag = False):
                 raise RuntimeError("You cannot reroll numbers higher than the die has.")
         
 #            if rerollD[indS]>0:
-#                print('Warning: rerolls are not supported by rollInfo')
+#                print('Warning: rerolls are not supported by info')
                 
             if numD[indS]<0:
                 negD[indS] = 1
@@ -192,8 +192,8 @@ def roll(varargin_clean, infoFlag = False):
         
         return val
     
-#def rollInfo(numD = 1,typeD = 20,modD = 0,keepLow = 0,keepHigh = 0,rerollD = 0):
-def rollInfo(varargin_clean = "1d20"):
+#def info(numD = 1,typeD = 20,modD = 0,keepLow = 0,keepHigh = 0,rerollD = 0):
+def info(varargin_clean = "1d20"):
     """Calculates the probabilities of and simulates the given die roll
     
     Args:
@@ -227,12 +227,12 @@ def rollInfo(varargin_clean = "1d20"):
                 critically miss
     
     Examples:
-        dic = rollInfo('2d4') # rolls two four-sided dice
-        dic = rollInfo('1d20+5') # rolls a twenty-sided die and adds 5
-        dic = rollInfo('2d20k1') # rolls two twenty-sided dice and keeps the highest
-        dic = rollInfo('2d20kl1') # rolls two twenty-sided dice and keeps the lowest
-        dic = rollInfo('2d6r1') # rolls 2d6 and rerolls (once) any '1's
-        dic = rollInfo('2d20K1+1d8+1) # rolls 2d20 at advantage and adds 1d8 + 5
+        dic = info('2d4') # rolls two four-sided dice
+        dic = info('1d20+5') # rolls a twenty-sided die and adds 5
+        dic = info('2d20k1') # rolls two twenty-sided dice and keeps the highest
+        dic = info('2d20kl1') # rolls two twenty-sided dice and keeps the lowest
+        dic = info('2d6r1') # rolls 2d6 and rerolls (once) any '1's
+        dic = info('2d20K1+1d8+1) # rolls 2d20 at advantage and adds 1d8 + 5
         
     """
     
@@ -349,7 +349,7 @@ def rollInfo(varargin_clean = "1d20"):
             raise RuntimeError("You cannot reroll numbers higher than the die has.")
     
         if rerollD[indS]>0:
-            print('Warning: rerolls are not supported by rollInfo')
+            print('Warning: rerolls are not supported by info')
         
     # establish the minimum and maximum values for this roll
         if keepLow[indS] or keepHigh[indS]:
@@ -465,7 +465,7 @@ def rollInfo(varargin_clean = "1d20"):
                 thisResult = result.tolist()
             
         else:
-            print('Warning: dropLow/High and keepLow/High are not fully supported by rollInfo.')
+            print('Warning: dropLow/High and keepLow/High are not fully supported by info.')
         
         # if results is empty, this is the first split
 #        print(results,indS)
@@ -494,11 +494,11 @@ def rollInfo(varargin_clean = "1d20"):
             
     return dic
 
-def rollWin(dic,target = 15):
+def win(dic,target = 15):
     """Returns the probability that the given roll will meet or exceed the target value
     
     Args:
-        dic (dict): A dictionary result from a rollInfo roll
+        dic (dict): A dictionary result from a info roll
         target (int): The target value
         
     Returns:
@@ -522,11 +522,11 @@ def rollWin(dic,target = 15):
     else:
         return sum(dic['results'][k] for k in range(target-dic['min'],dicLen))
         
-def rollLose(dic,target = 15):
+def lose(dic,target = 15):
     """Returns the probability that the given roll will fail to meet the target value
     
     Args:
-        dic (dict): A dictionary result from a rollInfo roll
+        dic (dict): A dictionary result from a info roll
         target (int): The target value
         
     Returns:
@@ -549,17 +549,19 @@ def rollLose(dic,target = 15):
     else:
         return sum(dic['results'][k] for k in range(target-dic['min']))
     
-def critInfo(dic = rollInfo('1d20')):
+def crit(dic = info('1d20')):
     """Returns the probability that the given roll will critically miss or hit
         if applicable
     
     Args:
-        dic (dict): A dictionary result from a rollInfo roll
+        dic (dict|str): A dictionary result from a info roll of str
         
     Returns:
         tuple: (dic['critHit'],dic['critMiss']
             
     """
+    if type(dic) is type(''):
+        dic = info(dic)
     # gives the probability that a given roll will critically hit or miss
     return (dic['critHit'],dic['critMiss'])
     
@@ -567,8 +569,8 @@ def compare(dicA,dicB,printFlag = False):
     """Compares two rolls and compares the probability that one will be higher.
     
     Args:
-        dicA (dict): A dictionary result from a rollInfo roll.
-        dicB (dict): A dictionary result from a rollInfo roll.
+        dicA (dict|str): A dictionary result from a info roll of str.
+        dicB (dict|str): A dictionary result from a info roll of str.
         printFlag (bool): A bool to determine whether to print the result.
         
     Returns:
@@ -581,9 +583,9 @@ def compare(dicA,dicB,printFlag = False):
         
     """
     if type(dicA) is type(''):
-        dicA = rollInfo(dicA)
+        dicA = info(dicA)
     if type(dicB) is type(''):
-        dicB = rollInfo(dicB)
+        dicB = info(dicB)
         
     if printFlag:
         raise RuntimeError('roll.compare: printFlag not supported yet.')
@@ -594,9 +596,9 @@ def compare(dicA,dicB,printFlag = False):
         tmp = tmp.replace('+','-')
         tmp = tmp.replace('--','+')
         if tmp[0] is not '-': tmp = '-'+tmp
-        return rollInfo(dicA['roll']+tmp)
+        return info(dicA['roll']+tmp)
         
-#rollInfo('-2d20k1')
+#info('-2d20k1')
 
 #advantage
 #1   1/20*1/20=0.0025
