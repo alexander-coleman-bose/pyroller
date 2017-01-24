@@ -15,6 +15,10 @@ Functions:
         
 TODO:
     * https://wiki.roll20.net/Dice_Reference
+        * exploding dice
+    * configuration system for reroll, crit, and exploding behavior
+    * function to compare one roll to another
+    * BUG: negD on '-2d20k1' doesn't work
     * get keepLow and keepHigh working for any roll fed into rollInfo
     * get rerollD to support multiple values in roll and rollInfo
     * get rerollD probabilities for rollInfo
@@ -280,6 +284,7 @@ def rollInfo(varargin_clean = "1d20"):
     
     for indS in range(len(splits)):
         # parse for numD or modD
+        if not splits[indS]: splits.pop(indS)
         tmp = re.search(r'^(-|)(\d*)d',splits[indS])
         if tmp:
             numD[indS] = int(tmp.group().strip('d'))
@@ -321,6 +326,12 @@ def rollInfo(varargin_clean = "1d20"):
 #        print(keepLow,keepHigh,dropLow,dropHigh)
 #        print(numD)
 #        print(splits[indS])
+            
+        if numD[indS]<0:
+            negD[indS] = 1
+            numD[indS] = -1*numD[indS]
+        else:
+            negD[indS] = 0
 
         if keepLow[indS] and keepHigh[indS]:
             raise RuntimeError("You can keep the lowest or the highest rolls, not both.")
@@ -339,12 +350,6 @@ def rollInfo(varargin_clean = "1d20"):
     
         if rerollD[indS]>0:
             print('Warning: rerolls are not supported by rollInfo')
-            
-        if numD[indS]<0:
-            negD[indS] = 1
-            numD[indS] = -1*numD[indS]
-        else:
-            negD[indS] = 0
         
     # establish the minimum and maximum values for this roll
         if keepLow[indS] or keepHigh[indS]:
@@ -544,7 +549,7 @@ def rollLose(dic,target = 15):
     else:
         return sum(dic['results'][k] for k in range(target-dic['min']))
     
-def critInfo(dic):
+def critInfo(dic = rollInfo('1d20')):
     """Returns the probability that the given roll will critically miss or hit
         if applicable
     
@@ -556,7 +561,42 @@ def critInfo(dic):
             
     """
     # gives the probability that a given roll will critically hit or miss
-    return (dic['critHit'],dic['critMiss'])       
+    return (dic['critHit'],dic['critMiss'])
+    
+def compare(dicA,dicB,printFlag = False):
+    """Compares two rolls and compares the probability that one will be higher.
+    
+    Args:
+        dicA (dict): A dictionary result from a rollInfo roll.
+        dicB (dict): A dictionary result from a rollInfo roll.
+        printFlag (bool): A bool to determine whether to print the result.
+        
+    Returns:
+        dic (dict): A dictionary result of A-B
+        
+    Examples:
+        dic = compare(dicA,dicB) # compare rollA to rollB, give dictionary
+        compare(dicA,dicB,1) # compare rollA to rollB, print a comparison
+        compare('1d20+5','2d20k1') # compare 1d20+5 to 2d20k1, print the dic
+        
+    """
+    if type(dicA) is type(''):
+        dicA = rollInfo(dicA)
+    if type(dicB) is type(''):
+        dicB = rollInfo(dicB)
+        
+    if printFlag:
+        raise RuntimeError('roll.compare: printFlag not supported yet.')
+    else:
+        tmp = dicB['roll']
+        tmp = tmp.replace('+-','-')
+        tmp = tmp.replace('-','+-')
+        tmp = tmp.replace('+','-')
+        tmp = tmp.replace('--','+')
+        if tmp[0] is not '-': tmp = '-'+tmp
+        return rollInfo(dicA['roll']+tmp)
+        
+#rollInfo('-2d20k1')
 
 #advantage
 #1   1/20*1/20=0.0025
