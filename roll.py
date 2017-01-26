@@ -93,7 +93,7 @@ def roll(varargin_clean, infoFlag = False):
         
         for indS in range(len(splits)):
             # parse for numD or modD
-            tmp = re.search(r'^(-|)(\d*)d',splits[indS])
+            tmp = re.search(r'^(-|)(\d+)d',splits[indS])
             if tmp:
                 numD[indS] = int(tmp.group().strip('d'))
             else:
@@ -101,7 +101,7 @@ def roll(varargin_clean, infoFlag = False):
                 modD[indS] = int(splits[indS])
                 
             # parse for typeD and dropLow
-            tmp = re.findall(r'(d)(\d*)',splits[indS])
+            tmp = re.findall(r'(d)(\d+)',splits[indS])
             if len(tmp) > 2:
                 raise RuntimeError("You can't use two separate drop low calls in a die slice.")
             elif len(tmp) > 1:
@@ -110,7 +110,7 @@ def roll(varargin_clean, infoFlag = False):
             elif len(tmp) > 0:
                 typeD[indS] = int(tmp[0][1])
                 
-            tmp = re.findall(r'(d|D|dl|dh|k|kl|kh|r)(\d*)',splits[indS])
+            tmp = re.findall(r'(d|D|dl|dh|k|kl|kh|r)(\d+)',splits[indS])
             for indT in range(len(tmp)):
                 if tmp[indT][0] in ['dl']:
                     dropLow[indS] = int(tmp[indT][1])
@@ -188,7 +188,7 @@ def roll(varargin_clean, infoFlag = False):
                 for indK in range(numD[indS]-keepHigh[indS]):
                     rolls.pop(rolls.index(min(rolls)))
                     
-            val = val + sum(rolls) + modD[indS]
+            val = val + ((-1)**negD[indS])*sum(rolls) + modD[indS]
         # end for every die slice
         
         return val
@@ -286,7 +286,7 @@ def info(varargin_clean = "1d20"):
     for indS in range(len(splits)):
         # parse for numD or modD
         if not splits[indS]: splits.pop(indS)
-        tmp = re.search(r'^(-|)(\d*)d',splits[indS])
+        tmp = re.search(r'^(-|)(\d+)d',splits[indS])
         if tmp:
             numD[indS] = int(tmp.group().strip('d'))
         else:
@@ -294,19 +294,18 @@ def info(varargin_clean = "1d20"):
             modD[indS] = int(splits[indS])
             
         # parse for typeD and dropLow
-        tmp = re.findall(r'(d)(\d*)',splits[indS])
+        tmp = re.findall(r'(d)(\d+)',splits[indS])
         if len(tmp) > 2:
             raise RuntimeError("You can't use two separate drop low calls in a die slice.")
         elif len(tmp) > 1:
             typeD[indS] = int(tmp[0][1])
-            if tmp[1][1] is not '':
-                dropLow[indS] = int(tmp[1][1])
+            dropLow[indS] = int(tmp[1][1])
         elif len(tmp) > 0:
             typeD[indS] = int(tmp[0][1])
 #        else:
 #            raise RuntimeError("Unknown error related to parsing modD.")
             
-        tmp = re.findall(r'(d|D|dl|dh|k|kl|kh|r)(\d*)',splits[indS])
+        tmp = re.findall(r'(D|dl|dh|k|kl|kh|r)(\d+)',splits[indS])
         for indT in range(len(tmp)):
             if tmp[indT][0] in ['dl']:
                 dropLow[indS] = int(tmp[indT][1])
@@ -393,7 +392,7 @@ def info(varargin_clean = "1d20"):
             for indK in range(numD[indS]-keepHigh[indS]):
                 rolls.pop(rolls.index(min(rolls)))
                 
-        dic['val'] = dic['val'] + sum(rolls) + modD[indS]
+        dic['val'] = dic['val'] + ((-1)**negD[indS])*sum(rolls) + modD[indS]
         
     # compute the probabilities
 #        results_all.append({})
@@ -406,7 +405,7 @@ def info(varargin_clean = "1d20"):
                     tmp = (2*n-1)/typeD[indS]**numD[indS]
 #                    results_all[indS][n] = tmp
                     thisResult[indD] = tmp
-                dic['mean'] = dic['mean'] + (2*ss(typeD[indS])-(1+typeD[indS])*(typeD[indS]/2))/typeD[indS]**numD[indS]
+                dic['mean'] = dic['mean'] + ((-1)**negD[indS])*(2*ss(typeD[indS])-(1+typeD[indS])*(typeD[indS]/2))/typeD[indS]**numD[indS]
 
             elif keepLow[indS] or dropHigh[indS]:
                 for indD in range(typeD[indS]):
@@ -414,7 +413,7 @@ def info(varargin_clean = "1d20"):
                     tmp = (2*(21-n)-1)/typeD[indS]**numD[indS]
 #                    results_all[indS][n] = tmp
                     thisResult[indD] = tmp
-                dic['mean'] = dic['mean'] + (2*ds(typeD[indS])-(1+typeD[indS])*(typeD[indS]/2))/typeD[indS]**numD[indS]
+                dic['mean'] = dic['mean'] + ((-1)**negD[indS])*(2*ds(typeD[indS])-(1+typeD[indS])*(typeD[indS]/2))/typeD[indS]**numD[indS]
                 
             else:
                 raise RuntimeError("Unexpected error: keepHigh or keepLow should = 1.")
@@ -425,7 +424,7 @@ def info(varargin_clean = "1d20"):
                 dic['critHit'] = thisResult[thisMax-1]
                 dic['critMiss'] = thisResult[thisMin-1]
         elif ~keepLow[indS] and ~keepHigh[indS] and ~dropLow[indS] and ~dropHigh[indS]:
-            dic['mean'] = dic['mean'] + numD[indS]*(1+typeD[indS])/2 + modD[indS]
+            dic['mean'] = dic['mean'] + ((-1)**negD[indS])*numD[indS]*(1+typeD[indS])/2 + modD[indS]
             
             if typeD[indS] == 20 and dic['critHit'] == 0:
                 dic['critHit'] = 1/20
@@ -536,13 +535,17 @@ def attack(dicA = '1d20',dicD = '1d8',dicM = '0',target = 15):
     avg = (hit-dicA['critHit'])*avg_raw + dicA['critHit']*avg_crit
     
     
-    dic = dicA
+#    dic = dicA
+    dic = {}
     dic['hit'] = hit
     dic['avg_raw'] = avg_raw
     dic['avg_crit'] = avg_crit
     dic['avg'] = avg
-    dic['mean'] = avg
     dic['roll'] = [dicA['roll'],dicD['roll'],dicM['roll']]
+    dic['min_attack'] = dicA['min']
+    dic['max_attack'] = dicA['max']
+    dic['min_damage'] = dicD['min']
+    dic['max_damage'] = dicD['max']
     
     return dic
         
@@ -657,7 +660,7 @@ def compare(dicA,dicB,printFlag = False):
         return info(dicA['roll']+tmp)
         
 #info('-2d20k1')
-info('2d20dl1')
+#info('2d20dl1')
 #attack('1d20+5','1d8','3')
 
 #advantage
