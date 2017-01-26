@@ -110,6 +110,8 @@ def roll(varargin_clean, infoFlag = False):
             elif len(tmp) > 0:
                 typeD[indS] = int(tmp[0][1])
                 
+                
+            rerollD[indS] = []
             tmp = re.findall(r'(d|D|dl|dh|k|kl|kh|r)(\d+)',splits[indS])
             for indT in range(len(tmp)):
                 if tmp[indT][0] in ['dl']:
@@ -125,7 +127,7 @@ def roll(varargin_clean, infoFlag = False):
                     dropHigh[indS] = int(tmp[indT][1])
                     
                 if tmp[indT][0] in ['r']:
-                    rerollD[indS] = int(tmp[indT][1])
+                    rerollD[indS].append(int(tmp[indT][1]))
                     
             #debug
     #        print(indS)
@@ -145,8 +147,8 @@ def roll(varargin_clean, infoFlag = False):
                 raise RuntimeError("You must keep a positive number of dice, but less than you roll.")
             elif dropHigh[indS]<0 or (dropHigh[indS]>=numD[indS] and dropHigh[indS]):
                 raise RuntimeError("You must keep a positive number of dice, but less than you roll.")
-            elif rerollD[indS]<0 or rerollD[indS]>typeD[indS]:
-                raise RuntimeError("You cannot reroll numbers higher than the die has.")
+#            elif rerollD[indS]<0 or rerollD[indS]>typeD[indS]:
+#                raise RuntimeError("You cannot reroll numbers higher than the die has.")
         
 #            if rerollD[indS]>0:
 #                print('Warning: rerolls are not supported by info')
@@ -168,7 +170,7 @@ def roll(varargin_clean, infoFlag = False):
             
             for indN in range(numD[indS]):
                 tmp = randint(1,typeD[indS])
-                if tmp == rerollD[indS]:
+                if tmp in rerollD[indS]:
                     tmp = randint(1,typeD[indS])
                 rolls.append(tmp)
                 
@@ -305,6 +307,7 @@ def info(varargin_clean = "1d20"):
 #        else:
 #            raise RuntimeError("Unknown error related to parsing modD.")
             
+        rerollD[indS] = []
         tmp = re.findall(r'(D|dl|dh|k|kl|kh|r)(\d+)',splits[indS])
         for indT in range(len(tmp)):
             if tmp[indT][0] in ['dl']:
@@ -320,7 +323,7 @@ def info(varargin_clean = "1d20"):
                 dropHigh[indS] = int(tmp[indT][1])
                 
             if tmp[indT][0] in ['r']:
-                rerollD[indS] = int(tmp[indT][1])
+                rerollD[indS].append(int(tmp[indT][1]))
                 
         #debug
 #        print(indS)
@@ -346,8 +349,8 @@ def info(varargin_clean = "1d20"):
             raise RuntimeError("You must keep a positive number of dice, but less than you roll.")
         elif dropHigh[indS]<0 or (dropHigh[indS]>=numD[indS] and dropHigh[indS]):
             raise RuntimeError("You must keep a positive number of dice, but less than you roll.")
-        elif rerollD[indS]<0 or rerollD[indS]>typeD[indS]:
-            raise RuntimeError("You cannot reroll numbers higher than the die has.")
+#        elif rerollD[indS]<0 or rerollD[indS]>typeD[indS]:
+#            raise RuntimeError("You cannot reroll numbers higher than the die has.")
     
         if rerollD[indS]>0:
             print('Warning: rerolls are not supported by info')
@@ -372,7 +375,7 @@ def info(varargin_clean = "1d20"):
         
         for indN in range(numD[indS]):
             tmp = randint(1,typeD[indS])
-            if tmp == rerollD[indS]:
+            if tmp in rerollD[indS]:
                 tmp = randint(1,typeD[indS])
             rolls.append(tmp)
             
@@ -423,6 +426,7 @@ def info(varargin_clean = "1d20"):
 #                    dic['critMiss'] = results_all[indS][1]
                 dic['critHit'] = thisResult[thisMax-1]
                 dic['critMiss'] = thisResult[thisMin-1]
+                
         elif ~keepLow[indS] and ~keepHigh[indS] and ~dropLow[indS] and ~dropHigh[indS]:
             dic['mean'] = dic['mean'] + ((-1)**negD[indS])*numD[indS]*(1+typeD[indS])/2 + modD[indS]
             
@@ -433,11 +437,18 @@ def info(varargin_clean = "1d20"):
 #            for indR in range(thisMin,thisMax+1):
 #                results_all[indS][indR] = 0
             result = np.array([0])
+            resultDie = np.array([1/typeD[indS]]*typeD[indS],dtype=float)
+            for indD in range(typeD[indS]):
+                if indD+1 in rerollD[indS]:
+                    resultDie[indD] = len(rerollD[indS])/(typeD[indS]**2)
+                else:
+                    resultDie[indD] = (len(rerollD[indS])+typeD[indS])/(typeD[indS]**2)
+                    
             for indN in range(numD[indS]):
                 if indN == 0:
-                    result = np.array([1/typeD[indS]]*typeD[indS],dtype=float)
+                    result = resultDie
                 else:
-                    resultArray = result[np.newaxis].T @ np.array([1/typeD[indS]]*typeD[indS],dtype=float)[np.newaxis]
+                    resultArray = result[np.newaxis].T @ resultDie[np.newaxis]
                     tmp = [resultArray[::-1,:].diagonal(i) for i in range(-resultArray.shape[0]+1,resultArray.shape[1])]
                     diags = [sum(resultArray.tolist()) for resultArray in tmp]
                     result = np.array(diags)
@@ -815,8 +826,26 @@ def compare(dicA,dicB,printFlag = False):
 #4 ...
 #5 ...
 #6 ...
-## for one die
+## for one die and one reroll number
 #if result == rerollD[indS]:
-#    prob = typeD[indS]**numD[indS]
+#    prob = 1/(typeD[indS]**numD[indS])
 #else:
 #    prob = (typeD[indS] + 1)/(typeD[indS]**numD[indS])
+#1d6r1r2
+#1 (1/6) =>  1 (1/6)
+#            2 (1/6)
+#            3 (1/6)
+#            4 (1/6)
+#            5 (1/6)
+#            6 (1/6)
+#2 (1/6) =>  1 (1/6)
+#            2 (1/6)
+#            3 (1/6)
+#            4 (1/6)
+#            5 (1/6)
+#            6 (1/6)
+#3 (1/6)
+#...
+#1 (2/36)
+#2 (2/36)
+#3 (8/36)
