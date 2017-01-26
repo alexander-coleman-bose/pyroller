@@ -495,12 +495,35 @@ def info(varargin_clean = "1d20"):
 #    dic['results_all'] = results_all
             
     return dic
-
-def win(dic,target = 15):
+    
+def attack(dicA = '1d20',dicD = '1d6',target = 15):
+    """Returns a dictionary with stats about an attack and damage roll.
+    
+    Args:
+        dicA (dict|str): A dictionary result from a d20 info roll
+        dicD (dict|str): A dictionary result from an info roll for damage
+        target (int): The target AC against the attack
+        
+    Returns:
+        dic (dict): A dictionary that contains stats on the rolls
+        
+    """
+    if type(dicA) is type(''):
+        dicA = info(dicA)
+    if type(dicD) is type(''):
+        dicD = info(dicD)
+        
+        
+        
+        
+    dic = dicD
+    return dic
+        
+def win(dic = '1d20',target = 15):
     """Returns the probability that the given roll will meet or exceed the target value
     
     Args:
-        dic (dict): A dictionary result from a info roll
+        dic (dict|str): A dictionary result from a info roll
         target (int): The target value
         
     Returns:
@@ -510,6 +533,9 @@ def win(dic,target = 15):
     """
     # gives the probability that a given roll will meet or exceed the target
 #    return sum(dic['results_all'][0][k] for k in range(target,max(dic['results_all'][0])+1))
+    if type(dic) is type(''):
+        dic = info(dic)
+        
     dicLen = len(dic['results'])
     if min(dic['keys'])>=target:
         if dic['critMiss']:
@@ -524,11 +550,11 @@ def win(dic,target = 15):
     else:
         return sum(dic['results'][k] for k in range(target-dic['min'],dicLen))
         
-def lose(dic,target = 15):
+def lose(dic = '1d20',target = 15):
     """Returns the probability that the given roll will fail to meet the target value
     
     Args:
-        dic (dict): A dictionary result from a info roll
+        dic (dict|str): A dictionary result from a info roll
         target (int): The target value
         
     Returns:
@@ -538,6 +564,9 @@ def lose(dic,target = 15):
     """
     # gives the probability that a given roll will fail to meet the target
 #    return sum(dic['results_all'][0][k] for k in range(min(dic['results_all'][0]),target))
+    if type(dic) is type(''):
+        dic = info(dic)
+        
     if min(dic['keys'])>=target:
         if dic['critMiss']:
             return dic['critMiss']
@@ -565,7 +594,7 @@ def crit(dic = info('1d20')):
     if type(dic) is type(''):
         dic = info(dic)
     # gives the probability that a given roll will critically hit or miss
-    return (dic['critHit'],dic['critMiss'])
+    return {'critHit':dic['critHit'],'critMiss':dic['critMiss']}
     
 def compare(dicA,dicB,printFlag = False):
     """Compares two rolls and compares the probability that one will be higher.
