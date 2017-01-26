@@ -110,7 +110,6 @@ def roll(varargin_clean, infoFlag = False):
             elif len(tmp) > 0:
                 typeD[indS] = int(tmp[0][1])
                 
-                
             rerollD[indS] = []
             tmp = re.findall(r'(d|D|dl|dh|k|kl|kh|r)(\d+)',splits[indS])
             for indT in range(len(tmp)):
@@ -285,9 +284,10 @@ def info(varargin_clean = "1d20"):
 #    keys = list()
 #    results_all = list()
     
+    if not splits[0]: splits.pop(0)
+    
     for indS in range(len(splits)):
         # parse for numD or modD
-        if not splits[indS]: splits.pop(indS)
         tmp = re.search(r'^(-|)(\d+)d',splits[indS])
         if tmp:
             numD[indS] = int(tmp.group().strip('d'))
@@ -352,7 +352,7 @@ def info(varargin_clean = "1d20"):
 #        elif rerollD[indS]<0 or rerollD[indS]>typeD[indS]:
 #            raise RuntimeError("You cannot reroll numbers higher than the die has.")
     
-        if rerollD[indS]>0:
+        if len(rerollD[indS])>0:
             print('Warning: rerolls are not supported by info')
         
     # establish the minimum and maximum values for this roll
@@ -427,9 +427,7 @@ def info(varargin_clean = "1d20"):
                 dic['critHit'] = thisResult[thisMax-1]
                 dic['critMiss'] = thisResult[thisMin-1]
                 
-        elif ~keepLow[indS] and ~keepHigh[indS] and ~dropLow[indS] and ~dropHigh[indS]:
-            dic['mean'] = dic['mean'] + ((-1)**negD[indS])*numD[indS]*(1+typeD[indS])/2 + modD[indS]
-            
+        elif ~keepLow[indS] and ~keepHigh[indS] and ~dropLow[indS] and ~dropHigh[indS]:            
             if typeD[indS] == 20 and dic['critHit'] == 0:
                 dic['critHit'] = 1/20
                 dic['critMiss'] = 1/20
@@ -453,12 +451,6 @@ def info(varargin_clean = "1d20"):
                     diags = [sum(resultArray.tolist()) for resultArray in tmp]
                     result = np.array(diags)
             
-#            for indR in range(typeD[indS]**numD[indS]):
-#                n = indR+1
-#                result = []
-#                for indN in range(numD[indS]):
-#                    result.append(floor((indR/(typeD[indS]**indN))%typeD[indS]+1))
-#                   
 #                # debug
 ##                print(results_all)
 ##                print(sum(result),thisMin,thisMax)
@@ -475,7 +467,13 @@ def info(varargin_clean = "1d20"):
 #                thisResult = reversed(result.tolist())
             else:
                 thisResult = result.tolist()
-            
+                
+#            dic['mean'] = dic['mean'] + ((-1)**negD[indS])*numD[indS]*(1+typeD[indS])/2 + modD[indS]
+            if negD[indS]:
+                dic['mean'] = dic['mean'] + sum(np.array(range(thisMin,thisMax+1))*np.array(list(reversed(thisResult))))
+            else:
+                dic['mean'] = dic['mean'] + sum(np.array(range(thisMin,thisMax+1))*np.array(thisResult))
+
         else:
             print('Warning: dropLow/High and keepLow/High are not fully supported by info.')
         
@@ -621,7 +619,7 @@ def lose(dic = '1d20',target = 15):
     else:
         return sum(dic['results'][k] for k in range(target-dic['min']))
     
-def crit(dic = info('1d20')):
+def crit(dic = '1d20'):
     """Returns the probability that the given roll will critically miss or hit
         if applicable
     
@@ -671,6 +669,7 @@ def compare(dicA,dicB,printFlag = False):
         return info(dicA['roll']+tmp)
         
 #info('-2d20k1')
+#info('-1d6r1')
 #info('2d20dl1')
 #attack('1d20+5','1d8','3')
 
