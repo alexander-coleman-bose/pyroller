@@ -34,8 +34,6 @@ from random import randint
 import re
 import numpy as np
 
-#def roll(varargin)
-#def roll(numD = 1,typeD = 20,modD = 0,keepLow = 0,keepHigh = 0,rerollD = 0):
 def roll(varargin_clean, infoFlag = False):
     """Simulates the specified die roll
     
@@ -127,12 +125,6 @@ def roll(varargin_clean, infoFlag = False):
                     
                 if tmp[indT][0] in ['r']:
                     rerollD[indS].append(int(tmp[indT][1]))
-                    
-            #debug
-    #        print(indS)
-    #        print(keepLow,keepHigh,dropLow,dropHigh)
-    #        print(numD)
-    #        print(splits[indS])
     
             if keepLow[indS] and keepHigh[indS]:
                 raise RuntimeError("You can keep the lowest or the highest rolls, not both.")
@@ -148,20 +140,12 @@ def roll(varargin_clean, infoFlag = False):
                 raise RuntimeError("You must keep a positive number of dice, but less than you roll.")
 #            elif rerollD[indS]<0 or rerollD[indS]>typeD[indS]:
 #                raise RuntimeError("You cannot reroll numbers higher than the die has.")
-        
-#            if rerollD[indS]>0:
-#                print('Warning: rerolls are not supported by info')
-                
+                        
             if numD[indS]<0:
                 negD[indS] = 1
                 numD[indS] = -1*numD[indS]
             else:
                 negD[indS] = 0
-            
-            #debug
-    #        print(indS,splits)
-    #        print(numD,typeD,modD,negD,rerollD)
-    #        print(keepLow,keepHigh,dropLow,dropHigh)
         
         # generate an actual rolled value for the die roll
             rolls = list()
@@ -194,7 +178,6 @@ def roll(varargin_clean, infoFlag = False):
         
         return val
     
-#def info(numD = 1,typeD = 20,modD = 0,keepLow = 0,keepHigh = 0,rerollD = 0):
 def info(varargin_clean = "1d20"):
     """Calculates the probabilities of and simulates the given die roll
     
@@ -275,14 +258,12 @@ def info(varargin_clean = "1d20"):
     dic['val'] = 0
     dic['results'] = 0
     dic['keys'] = 0
-#    dic['results_all'] = 0
     dic['mean'] = 0
     dic['critHit'] = 0
     dic['critMiss'] = 0
     
     results = list()
 #    keys = list()
-#    results_all = list()
     
     if not splits[0]: splits.pop(0)
     
@@ -304,8 +285,6 @@ def info(varargin_clean = "1d20"):
             dropLow[indS] = int(tmp[1][1])
         elif len(tmp) > 0:
             typeD[indS] = int(tmp[0][1])
-#        else:
-#            raise RuntimeError("Unknown error related to parsing modD.")
             
         rerollD[indS] = []
         tmp = re.findall(r'(D|dl|dh|k|kl|kh|r)(\d+)',splits[indS])
@@ -352,8 +331,8 @@ def info(varargin_clean = "1d20"):
 #        elif rerollD[indS]<0 or rerollD[indS]>typeD[indS]:
 #            raise RuntimeError("You cannot reroll numbers higher than the die has.")
     
-        if len(rerollD[indS])>0:
-            print('Warning: rerolls are not supported by info')
+#        if len(rerollD[indS])>0:
+#            print('Warning: rerolls are not supported by info')
         
     # establish the minimum and maximum values for this roll
         if keepLow[indS] or keepHigh[indS]:
@@ -398,7 +377,6 @@ def info(varargin_clean = "1d20"):
         dic['val'] = dic['val'] + ((-1)**negD[indS])*sum(rolls) + modD[indS]
         
     # compute the probabilities
-#        results_all.append({})
         thisResult = [0] * (thisMax-thisMin+1)
         # if an advantage or disadvantage roll
         if numD[indS] == 2 and typeD[indS] == 20 and (keepHigh[indS] == 1 or keepLow[indS] == 1 or dropLow[indS] == 1 or dropHigh[indS] == 1):
@@ -406,7 +384,6 @@ def info(varargin_clean = "1d20"):
                 for indD in range(typeD[indS]):
                     n = indD+1 # ind is 0 through typeD
                     tmp = (2*n-1)/typeD[indS]**numD[indS]
-#                    results_all[indS][n] = tmp
                     thisResult[indD] = tmp
                 dic['mean'] = dic['mean'] + ((-1)**negD[indS])*(2*ss(typeD[indS])-(1+typeD[indS])*(typeD[indS]/2))/typeD[indS]**numD[indS]
 
@@ -414,16 +391,13 @@ def info(varargin_clean = "1d20"):
                 for indD in range(typeD[indS]):
                     n = indD+1 # ind is 0 through typeD
                     tmp = (2*(21-n)-1)/typeD[indS]**numD[indS]
-#                    results_all[indS][n] = tmp
                     thisResult[indD] = tmp
                 dic['mean'] = dic['mean'] + ((-1)**negD[indS])*(2*ds(typeD[indS])-(1+typeD[indS])*(typeD[indS]/2))/typeD[indS]**numD[indS]
                 
             else:
                 raise RuntimeError("Unexpected error: keepHigh or keepLow should = 1.")
                 
-            if dic['critHit'] == 0:          
-#                    dic['critHit'] = results_all[indS][20]
-#                    dic['critMiss'] = results_all[indS][1]
+            if dic['critHit'] == 0:
                 dic['critHit'] = thisResult[thisMax-1]
                 dic['critMiss'] = thisResult[thisMin-1]
                 
@@ -432,8 +406,6 @@ def info(varargin_clean = "1d20"):
                 dic['critHit'] = 1/20
                 dic['critMiss'] = 1/20
             
-#            for indR in range(thisMin,thisMax+1):
-#                results_all[indS][indR] = 0
             result = np.array([0])
             resultDie = np.array([1/typeD[indS]]*typeD[indS],dtype=float)
             for indD in range(typeD[indS]):
@@ -456,11 +428,7 @@ def info(varargin_clean = "1d20"):
 ##                print(sum(result),thisMin,thisMax)
 ##                print(thisResult)
 ##                print(modD[indS])
-#                # may incur floating point errors
-#                thisResult[sum(result)-thisMin+modD[indS]] = thisResult[sum(result)-thisMin+modD[indS]] + 1
-##                results_all[indS][((-1)**negD[indS])*sum(result)+modD[indS]] = results_all[indS][((-1)**negD[indS])*sum(result)+modD[indS]] + 1/(typeD[indS]**numD[indS])
-#        
-#            thisResult = [x/(typeD[indS]**numD[indS]) for x in thisResult]
+
             if modD[indS]:
                 thisResult = [1]
 #            elif negD[indS]:
@@ -478,7 +446,6 @@ def info(varargin_clean = "1d20"):
             print('Warning: dropLow/High and keepLow/High are not fully supported by info.')
         
         # if results is empty, this is the first split
-#        print(results,indS)
         if not any(results):
             if negD[indS]:
                 results = np.array(list(reversed(thisResult)),dtype=float)
@@ -501,7 +468,6 @@ def info(varargin_clean = "1d20"):
     dic['avg'] = dic['mean']
     dic['keys'] = list(range(dic['min'],dic['max']+1))
     dic['results'] = results.tolist()
-#    dic['results_all'] = results_all
             
     return dic
     
