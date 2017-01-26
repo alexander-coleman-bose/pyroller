@@ -299,7 +299,8 @@ def info(varargin_clean = "1d20"):
             raise RuntimeError("You can't use two separate drop low calls in a die slice.")
         elif len(tmp) > 1:
             typeD[indS] = int(tmp[0][1])
-            dropLow[indS] = int(tmp[1][1])
+            if tmp[1][1] is not '':
+                dropLow[indS] = int(tmp[1][1])
         elif len(tmp) > 0:
             typeD[indS] = int(tmp[0][1])
 #        else:
@@ -496,27 +497,53 @@ def info(varargin_clean = "1d20"):
             
     return dic
     
-def attack(dicA = '1d20',dicD = '1d6',target = 15):
+def attack(dicA = '1d20',dicD = '1d8',dicM = '0',target = 15):
     """Returns a dictionary with stats about an attack and damage roll.
     
     Args:
         dicA (dict|str): A dictionary result from a d20 info roll
-        dicD (dict|str): A dictionary result from an info roll for damage
+        dicD (dict|str): A dictionary result from an info roll for damage (no mod)
+        dicM (dict|str): A dictionary result from an info roll for damage modifier
         target (int): The target AC against the attack
         
     Returns:
         dic (dict): A dictionary that contains stats on the rolls
+            'hit' (float): probability that the attack will hit
+            'avg' (float): average damage per attack against target
         
     """
+    if type(dicD) in [type(0),type(0.0)]:
+        target = dicD
+    if type(dicA) is type([]):
+        dicM = dicA[2]
+        dicD = dicA[1]
+        dicA = dicA[0]
     if type(dicA) is type(''):
         dicA = info(dicA)
     if type(dicD) is type(''):
         dicD = info(dicD)
-        
-        
-        
-        
-    dic = dicD
+    if type(dicM) is type(''):
+        dicM = info(dicM)
+    
+    # probability that the attack will hit
+    hit = win(dicA,target)
+    
+    # average damage if every attack hit
+    avg_raw = dicD['mean'] + dicM['mean']
+    avg_crit = 2*dicD['mean'] + dicM['mean'] # crits double the dice used, but not the modifier
+    
+    # average damage adjusted for hit probability
+    avg = (hit-dicA['critHit'])*avg_raw + dicA['critHit']*avg_crit
+    
+    
+    dic = dicA
+    dic['hit'] = hit
+    dic['avg_raw'] = avg_raw
+    dic['avg_crit'] = avg_crit
+    dic['avg'] = avg
+    dic['mean'] = avg
+    dic['roll'] = [dicA['roll'],dicD['roll'],dicM['roll']]
+    
     return dic
         
 def win(dic = '1d20',target = 15):
@@ -588,7 +615,7 @@ def crit(dic = info('1d20')):
         dic (dict|str): A dictionary result from a info roll of str
         
     Returns:
-        tuple: (dic['critHit'],dic['critMiss']
+        dict: {'critHit':dic['critHit'],'critMiss':dic['critMiss']}
             
     """
     if type(dic) is type(''):
@@ -630,6 +657,8 @@ def compare(dicA,dicB,printFlag = False):
         return info(dicA['roll']+tmp)
         
 #info('-2d20k1')
+info('2d20dl1')
+#attack('1d20+5','1d8','3')
 
 #advantage
 #1   1/20*1/20=0.0025
