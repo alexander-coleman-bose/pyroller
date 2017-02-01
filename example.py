@@ -50,20 +50,20 @@ if printAtt:
 
 #%% compare 1-5 level fighter, rogue, wizard, and monk
 # fighter
-#level = [1,2,3,4,5]
-#prof = [2,2,2,2,3]
-#mod = [3,3,3,4,4]
-#
-#fighter = {}
-#fighter['attacks'] = [0]*len(level)
-#fighter['damage_die'] = '1d12'
-#
-#for ind in range(len(level)):
-#    fighter['attacks'][ind] = [attack('1d20+'+str(mod[ind]),fighter['damage_die'],str(prof[ind]+mod[ind]))]
-#    if level[ind] >= 5:
-#        fighter['attacks'][ind].append(attack('1d20+'+str(mod[ind]),fighter['damage_die'],str(prof[ind]+mod[ind])))
-#        
-#print(fighter)
+level = [1,2,3,4,5]
+prof = [2,2,2,2,3]
+mod = [3,3,3,4,4]
+
+fighter = {}
+fighter['attacks'] = [0]*len(level)
+fighter['damage_die'] = '1d12'
+
+for ind in range(len(level)):
+    fighter['attacks'][ind] = [attack('1d20+'+str(mod[ind]),fighter['damage_die'],str(prof[ind]+mod[ind]))]
+    if level[ind] >= 5:
+        fighter['attacks'][ind].append(attack('1d20+'+str(mod[ind]),fighter['damage_die'],str(prof[ind]+mod[ind])))
+        
+print(fighter)
 
 #%% compare counterspell chances
 printCS = False
