@@ -33,6 +33,8 @@ from math import floor
 from random import randint
 import re
 import numpy as np
+import matplotlib
+import matplotlib.pyplot as plt
 
 def roll(varargin_clean, infoFlag = False):
     """Simulates the specified die roll
@@ -407,7 +409,10 @@ def info(varargin_clean = "1d20"):
                 dic['critMiss'] = 1/20
             
             result = np.array([0])
-            resultDie = np.array([1/typeD[indS]]*typeD[indS],dtype=float)
+            if typeD[indS]:
+                resultDie = np.array([1/typeD[indS]]*typeD[indS],dtype=float)
+            else:
+                resultDie = np.array([1])
             for indD in range(typeD[indS]):
                 if indD+1 in rerollD[indS]:
                     resultDie[indD] = len(rerollD[indS])/(typeD[indS]**2)

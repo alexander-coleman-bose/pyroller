@@ -74,7 +74,7 @@ def stature(baseHeight = 56,baseWeight = 110,hMod = '2d10',wMod = '2d4'):
     
     return [baseHeight+hRoll,baseWeight+(hRoll*wRoll)]
 
-print('Height)
+
 ## Parse height
 ## Example: 6`11``
 #def parseHeight(height):
