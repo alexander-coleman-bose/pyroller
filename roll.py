@@ -434,12 +434,12 @@ def info(varargin_clean = "1d20"):
 ##                print(thisResult)
 ##                print(modD[indS])
 
-            if modD[indS]:
-                thisResult = [1]
+            if typeD[indS]:
+                thisResult = result.tolist()
 #            elif negD[indS]:
 #                thisResult = reversed(result.tolist())
             else:
-                thisResult = result.tolist()
+                thisResult = [1]
                 
 #            dic['mean'] = dic['mean'] + ((-1)**negD[indS])*numD[indS]*(1+typeD[indS])/2 + modD[indS]
             if negD[indS]:
@@ -638,7 +638,8 @@ def compare(dicA,dicB,printFlag = False):
         tmp = tmp.replace('--','+')
         if tmp[0] is not '-': tmp = '-'+tmp
         return info(dicA['roll']+tmp)
-        
+     
+#info('1d20+0')
 #info('-2d20k1')
 #info('-1d6r1')
 #info('2d20dl1')
