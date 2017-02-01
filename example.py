@@ -90,26 +90,45 @@ if printCS:
     
 #%% compare save chances
 printSav = True
-castMod = 3 # Faen has an Intelligence modifier of 3
-profMod = 3 # Faen has a proficiency bonus of 3
-#DC = 8+castMod+profMod
-DC = 16
-attackMod = 4
-attackBonus = attackMod+profMod
+#castMod = 3 # Faen has an Intelligence modifier of 3
+#profMod = 3 # Faen has a proficiency bonus of 3
+##DC = 8+castMod+profMod
+#DC = 16
+#attackMod = 4
+#attackBonus = attackMod+profMod
 
-target = {}
-target['name'] = 'Arcanaloth'
-target['AC'] = 17
-target['saveStr'] = 3
-target['saveDex'] = 5
-target['saveCon'] = 2
-target['saveInt'] = 9
-target['saveWis'] = 7
-target['saveCha'] = 7
+Arcloth = {}
+Arcloth['name'] = 'Arcanaloth'
+Arcloth['AC'] = 17
+Arcloth['DC'] = 17
+Arcloth['att'] = 7
+Arcloth['dam'] = '2d4+3'
+Arcloth['saveStr'] = 3
+Arcloth['saveDex'] = 5
+Arcloth['saveCon'] = 2
+Arcloth['saveInt'] = 9
+Arcloth['saveWis'] = 7
+Arcloth['saveCha'] = 7
+       
+Faen = {}
+Faen['name'] = 'Faen Liadon'
+Faen['AC'] = 17
+Faen['DC'] = 14
+Faen['att'] = 7
+Faen['dam'] = '1d4+2d6+1d8+4'
+Faen['saveStr'] = -1
+Faen['saveDex'] = 7
+Faen['saveCon'] = 1
+Faen['saveInt'] = 6
+Faen['saveWis'] = 0
+Faen['saveCha'] = 1
+    
+you = Arcloth
+target = Faen
       
-dicAtt = info('1d20+'+str(attackBonus))
-dicAttA = info('2d20k1+'+str(attackBonus))
-dicAttD = info('2d20kl1+'+str(attackBonus))
+dicAtt = info('1d20+'+str(you['att']))
+dicAttA = info('2d20k1+'+str(you['att']))
+dicAttD = info('2d20kl1+'+str(you['att']))
 
 dicStr = info('1d20+'+str(target['saveStr']))
 dicStrA = info('2d20k1+'+str(target['saveStr']))
@@ -131,33 +150,33 @@ dicChaA = info('2d20k1+'+str(target['saveCha']))
 dicChaD = info('2d20kl1+'+str(target['saveCha']))
 
 if printSav:
-    print('Attack Modifier: '+str(attackBonus))
+    print('Attack Modifier: '+str(you['att']))
     print('{:>35}'.format('Chance to hit an AC of '+str(target['AC'])+':')+'{: 7.2%}'.format(win(dicAtt,target['AC'])))
     print('{:>35}'.format('(with advantage):')+'{: 7.2%}'.format(win(dicAttA,target['AC'])))
     print('{:>35}'.format('(with disadvantage):')+'{: 7.2%}'.format(win(dicAttD,target['AC'])))
     print()
-    print('Spellcasting DC: '+str(DC))
-    print('{:35}'.format('Chance of failing a DC '+str(DC)+' Str save:')+'{: 7.2%}'.format(lose(dicStr,DC)))
-    print('{:>35}'.format('(with advantage):')+'{: 7.2%}'.format(lose(dicStrA,DC)))
-    print('{:>35}'.format('(with disadvantage):')+'{: 7.2%}'.format(lose(dicStrD,DC)))
+    print('Spellcasting DC: '+str(you['DC']))
+    print('{:35}'.format('Chance of failing a DC '+str(you['DC'])+' Str save:')+'{: 7.2%}'.format(lose(dicStr,you['DC'])))
+    print('{:>35}'.format('(with advantage):')+'{: 7.2%}'.format(lose(dicStrA,you['DC'])))
+    print('{:>35}'.format('(with disadvantage):')+'{: 7.2%}'.format(lose(dicStrD,you['DC'])))
     print()
-    print('{:35}'.format('Chance of failing a DC '+str(DC)+' Dex save:')+'{: 7.2%}'.format(lose(dicDex,DC)))
-    print('{:>35}'.format('(with advantage):')+'{: 7.2%}'.format(lose(dicDexA,DC)))
-    print('{:>35}'.format('(with disadvantage):')+'{: 7.2%}'.format(lose(dicDexD,DC)))
+    print('{:35}'.format('Chance of failing a DC '+str(you['DC'])+' Dex save:')+'{: 7.2%}'.format(lose(dicDex,you['DC'])))
+    print('{:>35}'.format('(with advantage):')+'{: 7.2%}'.format(lose(dicDexA,you['DC'])))
+    print('{:>35}'.format('(with disadvantage):')+'{: 7.2%}'.format(lose(dicDexD,you['DC'])))
     print()
-    print('{:35}'.format('Chance of failing a DC '+str(DC)+' Con save:')+'{: 7.2%}'.format(lose(dicCon,DC)))
-    print('{:>35}'.format('(with advantage):')+'{: 7.2%}'.format(lose(dicConA,DC)))
-    print('{:>35}'.format('(with disadvantage):')+'{: 7.2%}'.format(lose(dicConD,DC)))
+    print('{:35}'.format('Chance of failing a DC '+str(you['DC'])+' Con save:')+'{: 7.2%}'.format(lose(dicCon,you['DC'])))
+    print('{:>35}'.format('(with advantage):')+'{: 7.2%}'.format(lose(dicConA,you['DC'])))
+    print('{:>35}'.format('(with disadvantage):')+'{: 7.2%}'.format(lose(dicConD,you['DC'])))
     print()
-    print('{:35}'.format('Chance of failing a DC '+str(DC)+' Int save:')+'{: 7.2%}'.format(lose(dicInt,DC)))
-    print('{:>35}'.format('(with advantage):')+'{: 7.2%}'.format(lose(dicIntA,DC)))
-    print('{:>35}'.format('(with disadvantage):')+'{: 7.2%}'.format(lose(dicIntD,DC)))
+    print('{:35}'.format('Chance of failing a DC '+str(you['DC'])+' Int save:')+'{: 7.2%}'.format(lose(dicInt,you['DC'])))
+    print('{:>35}'.format('(with advantage):')+'{: 7.2%}'.format(lose(dicIntA,you['DC'])))
+    print('{:>35}'.format('(with disadvantage):')+'{: 7.2%}'.format(lose(dicIntD,you['DC'])))
     print()
-    print('{:35}'.format('Chance of failing a DC '+str(DC)+' Wis save:')+'{: 7.2%}'.format(lose(dicWis,DC)))
-    print('{:>35}'.format('(with advantage):')+'{: 7.2%}'.format(lose(dicWisA,DC)))
-    print('{:>35}'.format('(with disadvantage):')+'{: 7.2%}'.format(lose(dicWisD,DC)))
+    print('{:35}'.format('Chance of failing a DC '+str(you['DC'])+' Wis save:')+'{: 7.2%}'.format(lose(dicWis,you['DC'])))
+    print('{:>35}'.format('(with advantage):')+'{: 7.2%}'.format(lose(dicWisA,you['DC'])))
+    print('{:>35}'.format('(with disadvantage):')+'{: 7.2%}'.format(lose(dicWisD,you['DC'])))
     print()
-    print('{:35}'.format('Chance of failing a DC '+str(DC)+' Cha save:')+'{: 7.2%}'.format(lose(dicCha,DC)))
-    print('{:>35}'.format('(with advantage):')+'{: 7.2%}'.format(lose(dicChaA,DC)))
-    print('{:>35}'.format('(with disadvantage):')+'{: 7.2%}'.format(lose(dicChaD,DC)))
+    print('{:35}'.format('Chance of failing a DC '+str(you['DC'])+' Cha save:')+'{: 7.2%}'.format(lose(dicCha,you['DC'])))
+    print('{:>35}'.format('(with advantage):')+'{: 7.2%}'.format(lose(dicChaA,you['DC'])))
+    print('{:>35}'.format('(with disadvantage):')+'{: 7.2%}'.format(lose(dicChaD,you['DC'])))
     
