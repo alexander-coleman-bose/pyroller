@@ -50,20 +50,20 @@ if printAtt:
 
 #%% compare 1-5 level fighter, rogue, wizard, and monk
 # fighter
-level = [1,2,3,4,5]
-prof = [2,2,2,2,3]
-mod = [3,3,3,4,4]
-
-fighter = {}
-fighter['attacks'] = [0]*len(level)
-fighter['damage_die'] = '1d12'
-
-for ind in range(len(level)):
-    fighter['attacks'][ind] = [attack('1d20+'+str(mod[ind]),fighter['damage_die'],str(prof[ind]+mod[ind]))]
-    if level[ind] >= 5:
-        fighter['attacks'][ind].append(attack('1d20+'+str(mod[ind]),fighter['damage_die'],str(prof[ind]+mod[ind])))
-        
-print(fighter)
+#level = [1,2,3,4,5]
+#prof = [2,2,2,2,3]
+#mod = [3,3,3,4,4]
+#
+#fighter = {}
+#fighter['attacks'] = [0]*len(level)
+#fighter['damage_die'] = '1d12'
+#
+#for ind in range(len(level)):
+#    fighter['attacks'][ind] = [attack('1d20+'+str(mod[ind]),fighter['damage_die'],str(prof[ind]+mod[ind]))]
+#    if level[ind] >= 5:
+#        fighter['attacks'][ind].append(attack('1d20+'+str(mod[ind]),fighter['damage_die'],str(prof[ind]+mod[ind])))
+#        
+#print(fighter)
 
 #%% compare counterspell chances
 printCS = False
@@ -88,8 +88,35 @@ if printCS:
     plt.axis([1,9,0,1])
     plt.show()
     
+#%% Compare Expertise to advantage
+printEx = True
+abilityMod = 3
+profMod = 2
+
+dic = info('1d20+'+str(abilityMod+profMod))
+dicE = info('1d20+'+str(abilityMod+2*profMod))
+dicA = info('2d20k1+'+str(abilityMod+profMod))
+dicB = info('2d20k1+'+str(abilityMod+2*profMod))
+
+listDC = list(range(1,31))
+listProb = [0]*len(listDC)
+listProbE = [0]*len(listDC)
+listProbA = [0]*len(listDC)
+listProbB = [0]*len(listDC)
+
+for ind in range(len(listDC)):
+    listProb[ind] = win(dic,listDC[ind])
+    listProbE[ind] = win(dicE,listDC[ind])
+    listProbA[ind] = win(dicA,listDC[ind])
+    listProbB[ind] = win(dicB,listDC[ind])
+
+if printEx:
+    plt.plot(listDC,listProb,listDC,listProbE,listDC,listProbA,listDC,listProbB)
+    plt.axis([1,30,0,1])
+    plt.show()
+    
 #%% compare save chances
-printSav = True
+printSav = False
 #castMod = 3 # Faen has an Intelligence modifier of 3
 #profMod = 3 # Faen has a proficiency bonus of 3
 ##DC = 8+castMod+profMod
