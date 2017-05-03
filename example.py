@@ -89,7 +89,7 @@ if printCS:
     plt.show()
     
 #%% Compare Expertise to advantage
-printEx = True
+printEx = False
 abilityMod = 3
 profMod = 2
 
@@ -116,7 +116,7 @@ if printEx:
     plt.show()
     
 #%% compare save chances
-printSav = False
+printSav = True
 #castMod = 3 # Faen has an Intelligence modifier of 3
 #profMod = 3 # Faen has a proficiency bonus of 3
 ##DC = 8+castMod+profMod
@@ -137,25 +137,40 @@ Arcloth['saveInt'] = 9
 Arcloth['saveWis'] = 7
 Arcloth['saveCha'] = 7
        
+Strahd = {}
+Strahd['name'] = 'Strahd'
+Strahd['AC'] = 16
+Strahd['DC'] = 18
+Strahd['att'] = 9
+Strahd['dam'] = '1d8+4d6+4'
+Strahd['saveStr'] = 4
+Strahd['saveDex'] = 9
+Strahd['saveCon'] = 4
+Strahd['saveInt'] = 5
+Strahd['saveWis'] = 7
+Strahd['saveCha'] = 9
+       
 Faen = {}
 Faen['name'] = 'Faen Liadon'
-Faen['AC'] = 17
-Faen['DC'] = 14
-Faen['att'] = 7
-Faen['dam'] = '1d4+2d6+1d8+4'
-Faen['saveStr'] = -1
+Faen['AC'] = 20
+Faen['DC'] = 16
+Faen['att'] = 9
+Faen['dam'] = '1d8+1d8+2d8+3d6'
+Faen['damM'] = '5'
+Faen['saveStr'] = 0
 Faen['saveDex'] = 7
 Faen['saveCon'] = 1
-Faen['saveInt'] = 6
-Faen['saveWis'] = 0
-Faen['saveCha'] = 1
+Faen['saveInt'] = 8
+Faen['saveWis'] = 6
+Faen['saveCha'] = -1
     
-you = Arcloth
-target = Faen
+you = Faen
+target = Strahd
       
 dicAtt = info('1d20+'+str(you['att']))
 dicAttA = info('2d20k1+'+str(you['att']))
 dicAttD = info('2d20kl1+'+str(you['att']))
+dicDam = info(you['dam'])
 
 dicStr = info('1d20+'+str(target['saveStr']))
 dicStrA = info('2d20k1+'+str(target['saveStr']))
@@ -179,6 +194,7 @@ dicChaD = info('2d20kl1+'+str(target['saveCha']))
 if printSav:
     print('Attack Modifier: '+str(you['att']))
     print('{:>35}'.format('Chance to hit an AC of '+str(target['AC'])+':')+'{: 7.2%}'.format(win(dicAtt,target['AC'])))
+    print('{:>35}'.format('For average damage of:')+'{: 7.2f}'.format(attack('1d20+'+str(you['att']),you['dam'],you['damM'],target['AC'])['avg']))
     print('{:>35}'.format('(with advantage):')+'{: 7.2%}'.format(win(dicAttA,target['AC'])))
     print('{:>35}'.format('(with disadvantage):')+'{: 7.2%}'.format(win(dicAttD,target['AC'])))
     print()
