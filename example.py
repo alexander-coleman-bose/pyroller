@@ -116,7 +116,7 @@ if printEx:
     plt.show()
     
 #%% compare save chances
-printSav = True
+printSav = False
 #castMod = 3 # Faen has an Intelligence modifier of 3
 #profMod = 3 # Faen has a proficiency bonus of 3
 ##DC = 8+castMod+profMod
@@ -223,3 +223,47 @@ if printSav:
     print('{:>35}'.format('(with advantage):')+'{: 7.2%}'.format(lose(dicChaA,you['DC'])))
     print('{:>35}'.format('(with disadvantage):')+'{: 7.2%}'.format(lose(dicChaD,you['DC'])))
     
+#%% roll an attack roll with advantage and 1d6 Bardic Inspiration (2d20K1 + 1d6 + 5)
+printDmgCompare = True
+target = 18
+eb1xInfo = attack('1d20 + 7','1d10','4',target)
+ebH1xInfo = attack('1d20 + 7','1d10 + 1d6','4',target)
+tiEiInfo = attack('1d20 + 7','1d8 + 1d6','4',target)
+tiEiEdInfo = attack('1d20 + 7','1d8 + 1d6 + 2d6','4',target)
+
+if printDmgCompare:
+    print('\nThe chance to hit for all of these attacks against a target of '+str(target)+' AC is '+str(100*eb1xInfo['hit'])+'%.')
+
+    print('\nFor a single ray of Eldritch Blast at Level 6, 18 Charisma, Agonizing Blast...')
+    print('(1d20+7,1d10+4)')
+    print('\tyou will get a minimum result of '+str(eb1xInfo['min_damage'])+'.')
+    print('\tyou will get a maximum result of '+str(eb1xInfo['max_damage'])+'.')
+    print('\tyou will get a mean result of '+str(eb1xInfo['avg'])+'.')
+
+    print('\nFor a single ray of Eldritch Blast with Hex at Level 6, 18 Charisma, Agonizing Blast...')
+    print('(1d20+7,1d10+1d6+4)')
+    print('\tyou will get a minimum result of '+str(ebH1xInfo['min_damage'])+'.')
+    print('\tyou will get a maximum result of '+str(ebH1xInfo['max_damage'])+'.')
+    print('\tyou will get a mean result of '+str(ebH1xInfo['avg'])+'.')
+
+    print('\nFor two Eldritch blasts without Hex...')
+    print('\tyou will get a minimum result of '+str(2*eb1xInfo['min_damage'])+'.')
+    print('\tyou will get a maximum result of '+str(2*eb1xInfo['max_damage'])+'.')
+    print('\tyou will get a mean result of '+str(2*eb1xInfo['avg'])+'.')
+
+    print('\nFor two Eldritch Blasts with Hex')
+    print('\tyou will get a minimum result of '+str(2*ebH1xInfo['min_damage'])+'.')
+    print('\tyou will get a maximum result of '+str(2*ebH1xInfo['max_damage'])+'.')
+    print('\tyou will get a mean result of '+str(2*ebH1xInfo['avg'])+'.')
+
+    print('\nFor a single Tinkerer attack at Level 6, 18 Dexterity, Rapier, Engine Infusion...')
+    print('(1d20+7,1d8+1d6+4)')
+    print('\tyou will get a minimum result of '+str(tiEiInfo['min_damage'])+'.')
+    print('\tyou will get a maximum result of '+str(tiEiInfo['max_damage'])+'.')
+    print('\tyou will get a mean result of '+str(tiEiInfo['avg'])+'.')
+
+    print('\nFor a single Tinkerer attack at Level 6, 18 Dexterity, Rapier, Engine Infusion, Engine Discharge...')
+    print('(1d20+7,1d8+1d6+2d6+4)')
+    print('\tyou will get a minimum result of '+str(tiEiEdInfo['min_damage'])+'.')
+    print('\tyou will get a maximum result of '+str(tiEiEdInfo['max_damage'])+'.')
+    print('\tyou will get a mean result of '+str(tiEiEdInfo['avg'])+'.')

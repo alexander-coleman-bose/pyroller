@@ -224,7 +224,7 @@ def info(varargin_clean = "1d20"):
     """
     
     def ss(numD):
-        tmp = 0;
+        tmp = 0
         for ind in range(numD):
             tmp = tmp + (ind+1)**2
         return tmp
@@ -525,7 +525,7 @@ def attack(dicA = '1d20',dicD = '1d8',dicM = '0',target = 15):
     dic['min_attack'] = dicA['min']
     dic['max_attack'] = dicA['max']
     dic['min_damage'] = dicD['min']
-    dic['max_damage'] = dicD['max']
+    dic['max_damage'] = 2*dicD['max']+dicM['max']
     
     return dic
         
